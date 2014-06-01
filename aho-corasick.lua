@@ -1,9 +1,9 @@
 --  Copyright (c) 2014 CloudFlare, Inc. All rights reserved.
---  
+--
 --  Redistribution and use in source and binary forms, with or without
 --  modification, are permitted provided that the following conditions are
 --  met:
---  
+--
 --     * Redistributions of source code must retain the above copyright
 --  notice, this list of conditions and the following disclaimer.
 --     * Redistributions in binary form must reproduce the above
@@ -13,7 +13,7 @@
 --     * Neither the name of CloudFlare, Inc. nor the names of its
 --  contributors may be used to endorse or promote products derived from
 --  this software without specific prior written permission.
---  
+--
 --  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 --  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 --  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -26,44 +26,44 @@
 --  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 --  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
--- 
+--
 --   This module implement Aho-corasick string matching algorithm (hereinafter
 -- we call it AC algorithm for short).
--- 
+--
 --   For efficiency purpose, we construct the graph twice, one using convenient
 -- yet inefficient data structure, which is immediately converted to an efficient
 -- yet awkward representation. To avoid unnecesesary confusion, we call the
 -- first and second graph "state machine" and "AC graph", respectively.
--- 
+--
 --   We believe the efficency arises from two important factors:
 --    1. It uses much more compact data structure thanks to FFI
 --    2. It use binary search upon sorted array instead of hash-table to
 --       determine the outcome of state transition (i.e. the goto(input)
 --       function).
--- 
+--
 --   Again for the efficiency reasons, this implementation is slightly different
 -- from the standard AC algorithm: If a string's sub-string matches multiple
--- strings represented by the AC graph, only one match is returned. 
--- 
+-- strings represented by the AC graph, only one match is returned.
+--
 -- o.There are two interface functions
--- 
+--
 --  1. build(strs)
 --     where the strs is a vector of strings. If successful, it returns the
 --     AC graph represented as a pair, with first element being the root of
 --     the AC graph, and and second element being the buffer accommodating
 --     the entire AC graph; otherwise, it returns nil.
--- 
+--
 --  2. match(acgraph, str)
 --     The first parameter is the AC graph returned from build(), and second
 --     parameter is string to be machined. If the string matches the AC graph
---     the range of sub-string is returned to the caller; otherwise,  
+--     the range of sub-string is returned to the caller; otherwise,
 --
--- o. Here is a usage example: 
---    -------------------------------------------------------------- 
+-- o. Here is a usage example:
+--    --------------------------------------------------------------
 --      local AC = require 'aho-corasick'
 --      local tab = {"he", "she", "his", "her"}
 --      local graph = AC.new(tab)
---      
+--
 --      local str = "shis2"
 --      local b, e = AC.match(graph, str)
 --      if b then
@@ -73,12 +73,12 @@
 --  Executing this example will yeild : "shis2[2:4] matches", meaning substring
 --  from position 2 to 4, inclusively, maches one of strings respreneted by the
 --  AC graph.
--- 
+--
 -- o. CAVEAT:
 --    To reduce memory allocation overhead, and also to reduce the size of pointer
 --  we allocate a consecutive chunk of memory to accommodate the entire graph,
 --  which may not work for big or huge graph.
--- 
+--
 -- o. Troubleshooting
 --   set variable DEBUG to non-nil will enable dummping the state machine (right
 -- before it's converted to AC graph, see above comment).
@@ -151,15 +151,15 @@ local AC_NODE_alignof   = ffi.alignof("AC_NODE")
 local AC_INPUT_sizeof   = ffi.sizeof("AC_INPUT")
 
 -- Given the number of goto-states, return the size in byte of the AC node.
--- 
+--
 local function _ac_calc_node_sz (goto_num)
-  -- Offset of "input" field 
+  -- Offset of "input" field
   local input_ofst = ffi_offsetof(AC_NODE_t, "input")
 
   -- Input_end points to the end of input vector. We allocate one more element
   -- to abviate the need of conditional branch like this (in C):
   --  input_end = goto_num == 0 ? input_ofst + goto_num : input_ofst + 1
-  -- 
+  --
   local input_end = input_ofst + (goto_num + 1) * AC_INPUT_sizeof
   local goto_state_ofst = band(input_end + ACNODE_ID_alignof - 1,
                                bnot(ACNODE_ID_alignof - 1))
@@ -195,14 +195,14 @@ end
 
 -- State (of state machine) has bunch of fields comprising its "array part"
 --
--- state[1] is a hash table, keeping track of transition, i.e 
+-- state[1] is a hash table, keeping track of transition, i.e
 --   the goto-function.
 -- state[2] is an array, collecting all the possible valid inputs.
 -- state[3] is the "failure" link
 -- state[4] is the depth of the state from root state
 -- state[5] is for misc annotation
 -- state[6] is for debugging id, state has debugging ID, starting from 1
--- 
+--
 local STATE_GOTO      = 1
 local STATE_INPUT     = 2
 local STATE_FAILURE   = 3
@@ -213,7 +213,7 @@ local STATE_DEBUG_ID  = 6
 local DEBUG = nil
 local debug_id_num = 0
 
-local function _sm_create_state() 
+local function _sm_create_state()
   local s = {{}, {}, 0, 0, 0, debug_id_num}
   s[STATE_INPUT][0] = 0 -- init the length of input vector
   debug_id_num = debug_id_num + 1
@@ -223,7 +223,7 @@ end
 -- Return the target state of the transition from specified state and input. If
 -- the transition does't exist, add it to the state machine, and return the
 -- target state.
--- 
+--
 local function _sm_goto(cur_state, input)
   local targ_state = cur_state[STATE_GOTO][input]
 
@@ -249,7 +249,7 @@ end
 -- the vector.
 --
 local function _sm_build(strs)
-  local strnum = #strs 
+  local strnum = #strs
   if strnum == 0 then
     return nil
   end
@@ -296,7 +296,7 @@ local function _sm_build(strs)
   local idx = 2 -- skip root node
   while idx <= sz do
     local s = worklist[idx]
-    idx = idx + 1 
+    idx = idx + 1
 
     goto_func = s[STATE_GOTO]
     input_set = s[STATE_INPUT]
@@ -335,14 +335,14 @@ local function _sm_dump(state_vect, vect_sz)
       local c = input_vect[j]
       io.write(string.format("%c -> S:%d,", c, gotofunc[c][STATE_DEBUG_ID]))
     end
-    
+
     local f = state[STATE_FAILURE]
     if f and f[STAE_DEBUG_ID] then
       io.write(string.format("} fail-link: %d\n", f[STATE_DEBUG_ID]))
     else
       print("} fail-link: nil")
     end
-  end 
+  end
 end
 
 local function _convert(state_vect, vect_sz)
@@ -383,7 +383,7 @@ local function _convert(state_vect, vect_sz)
 
     if  state.is_terminal then
       ac_node.magic_num_flags = 0x5b
-    else  
+    else
       ac_node.magic_num_flags = 0x5a
     end
 
@@ -433,11 +433,11 @@ end
 -- to be matched. If a substring of "str" matches one of the strings represented
 -- the AC graph, return the index-range of the sub-string. This function only
 -- returns the first match; it will not return all maches.
--- 
+--
 -- E.g. The graph represents this set of string {"he", "she", "his", "her"}
 -- and the string to be matched is "shis2". This function will return "2, 4" as
 -- "shis2"[2:4] (i.e. "his") maches one of the string in the AC graph.
--- 
+--
 function M.match(graph, str)
   local root = graph[1]
   local buffer = graph[2]
@@ -486,7 +486,7 @@ function M.match(graph, str)
     if band(state.magic_num_flags, 1) == 1 then
       return str_idx - state.depth + 1, str_idx
     end
-    
+
     str_idx = str_idx + 1
   end
 end
