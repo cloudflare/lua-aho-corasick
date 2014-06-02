@@ -329,7 +329,8 @@ local function _sm_dump_text(state_vect, vect_sz)
 
   for i = 1, vect_sz do
     local state = state_vect[i]
-    file:write(string_fmt("S:%d  goto {", state[STATE_DEBUG_ID]))
+    file:write(string_fmt("S:%d ofst:%d goto {",
+                          state[STATE_DEBUG_ID], state[STATE_OFST]))
 
     local gotofunc = state[STATE_GOTO]
     local input_vect = state[STATE_INPUT]
@@ -428,9 +429,12 @@ local function _convert(state_vect, vect_sz)
     local ac_node = ffi_cast(AC_NODE_ptr_t, buffer + state[STATE_OFST])
 
     local f = state[STATE_FAILURE]
-    if f ~= root and f then
+    if f then
       ac_node.fail_link = f[STATE_OFST]
     else
+      if state ~= root then
+        return nil -- this is a bug!
+      end
       ac_node.fail_link = 0
     end
 
