@@ -18,5 +18,7 @@ The stardard AC algorithm will report the given string matches both "she" and
 if it's worth doing that at the cost of additional memory, computation and
 complexity.
 
-  !!!NOTE!!!: As of I write this comment, this piece of code is *NOT* fully
-tested yet.
+  !!!NOTE!!!: If the dictionary is small, say having less than 50 entries,
+LUA implementation could be significantly slower than the brute-force approach
+by matching the specified string against all strings in the dictionary via
+string.find().

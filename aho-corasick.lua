@@ -173,16 +173,14 @@ end
 -- Return the vector of goto-state of the specified AC node
 -- NOTE: keep in sync with __ac_calc_node_sz()
 local function _ac_get_goto_vect(state)
-  local goto_num = state.goto_num
   local input_ofst = ffi_offsetof(AC_NODE_t, "input")
-  local input_end = input_ofst + (goto_num + 1) * AC_INPUT_sizeof
+  local input_end = input_ofst + (state.goto_num + 1) * AC_INPUT_sizeof
 
   local goto_state_ofst = band(input_end + ACNODE_ID_alignof - 1,
                                bnot(ACNODE_ID_alignof - 1))
   local t = ffi_cast(uchar_ptr_t, state) + goto_state_ofst
   return ffi_cast(ACNODEID_ptr_t, t)
 end
-
 
 -- ///////////////////////////////////////////////////////////////////////////
 --
@@ -452,6 +450,7 @@ local function _convert(state_vect, vect_sz)
 
     local ac_goto_num = input_vect[0]
     ac_node.goto_num = ac_goto_num
+
     local ac_goto_state = _ac_get_goto_vect(ac_node)
     tab_sort(input_vect)
 
@@ -464,7 +463,17 @@ local function _convert(state_vect, vect_sz)
 
   local ac_root = ffi_cast(AC_NODE_ptr_t, buffer + root[STATE_OFST])
   ac_root.fail_link = 0
-  return ac_root, buffer
+  root_charset = ffi_new("unsigned char[?]", 256)
+  for i=1, 256 do
+    root_charset[i-1] = 0
+  end
+
+  local gn = ac_root.goto_num
+  for i=1, gn do
+    root_charset[ac_root.input[i-1]] = 1
+  end
+
+  return ac_root, buffer, root_charset
 end
 
 -- ///////////////////////////////////////////////////////////////////////////
@@ -477,7 +486,31 @@ function M.new(strs)
   local vect, vect_sz = _sm_build(strs)
   if vect then
     local ac_root, buffer = _convert(vect, vect_sz)
-    return { ac_root, buffer}
+    collectgarbage()
+    return { ac_root, buffer, root_charset}
+  end
+end
+
+local function _state_goto(state, input, ac_buffer)
+  local gn = state.goto_num
+
+  -- Binary search the matching char
+  local idx_l = 0
+  local idx_r = gn - 1
+
+  while idx_l <= idx_r do
+    local mid = brshift(idx_l + idx_r, 1)
+    local mid_c = state.input[mid]
+
+    if mid_c > input then
+      idx_r = mid - 1
+    elseif mid_c < input then
+      idx_l = mid + 1
+    else
+      local vect = _ac_get_goto_vect(state)
+      state = ffi_cast(AC_NODE_ptr_t, ac_buffer + vect[mid])
+      return state
+    end
   end
 end
 
@@ -493,51 +526,51 @@ end
 function M.match(graph, str)
   local root = graph[1]
   local buffer = graph[2]
+  local root_charset = graph[3]
   local state = root
-
+  local root_ofst = ffi_cast(uchar_ptr_t, root) - ffi_cast(uchar_ptr_t, buffer)
   local str_end = #str
   local str_idx = 1
+
+  while str_idx <= str_end do
+    local t = str_byte(str, str_idx)
+    if root_charset[t] == 0 then
+       str_idx = str_idx + 1
+    else
+       break;
+    end
+  end
+
   while str_idx <= str_end do
     local c = str_byte(str, str_idx)
-    local gn = state.goto_num
+    local new_state = _state_goto(state, c, buffer)
 
-    -- Binary search the matching char
-    local idx_l = 0
-    local idx_r = gn - 1
-    local found = nil
-
-    while idx_l <= idx_r do
-      local mid = brshift(idx_l + idx_r, 1)
-      local mid_c = state.input[mid]
-      if mid_c > c then
-        idx_r = mid - 1
-      elseif mid_c < c then
-        idx_l = mid + 1
-      else
-        found = mid
-        break
-      end
-    end
-
-    if not found then
-      local fail_link = state.fail_link
-      if fail_link ~= 0 then
-        -- Follow the fail-link
-        state = ffi_cast(AC_NODE_ptr_t, buffer + fail_link)
-        str_idx = str_idx - 1
-      else
-        -- The state == root, string move forward.
-      end
+    --io.write(string.format("Input %c at loop\n", c))
+    if new_state then
+      state = new_state
+      str_idx = str_idx + 1
     else
-      local vect = _ac_get_goto_vect(state)
-      state = ffi_cast(AC_NODE_ptr_t, buffer + vect[found])
+      local fail_link = state.fail_link
+      if fail_link == root_ofst then
+        state = root
+        while str_idx <= str_end do
+          local t = str_byte(str, str_idx)
+          str_idx = str_idx + 1
+          if root_charset[t] ~= 0 then
+            state = _state_goto(state, t, buffer)
+            break
+          end
+        end
+      else
+        -- Follow fail-link
+        state = ffi_cast(AC_NODE_ptr_t, buffer + fail_link)
+      end
     end
 
     if band(state.magic_num_flags, 1) == 1 then
-      return str_idx - state.depth + 1, str_idx
+      local cur_pos = str_idx - 1
+      return cur_pos - state.depth + 1, cur_pos
     end
-
-    str_idx = str_idx + 1
   end
 end
 
