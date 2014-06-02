@@ -80,8 +80,8 @@
 --  which may not work for big or huge graph.
 --
 -- o. Troubleshooting
---   set variable DEBUG to non-nil will enable dummping the state machine (right
--- before it's converted to AC graph, see above comment).
+--   Setting variable DEBUG to non-nil will enable dummping the state machine
+-- to a plain-text file ac.txt and a dotty format file ac.dot.
 --
 
 local ffi = require "ffi"
@@ -323,25 +323,81 @@ local function _sm_build(strs)
   return worklist, sz
 end
 
-local function _sm_dump(state_vect, vect_sz)
+local function _sm_dump_text(state_vect, vect_sz)
+  local string_fmt = string.format
+  local file = io.open("ac.txt", "w+")
+
   for i = 1, vect_sz do
     local state = state_vect[i]
-    io.write(string.format("S:%d  goto {", state[STATE_DEBUG_ID]))
+    file:write(string_fmt("S:%d  goto {", state[STATE_DEBUG_ID]))
 
     local gotofunc = state[STATE_GOTO]
     local input_vect = state[STATE_INPUT]
     for j = 1, #state[STATE_INPUT] do
       local c = input_vect[j]
-      io.write(string.format("%c -> S:%d,", c, gotofunc[c][STATE_DEBUG_ID]))
+      file:write(string_fmt("%c -> S:%d,", c, gotofunc[c][STATE_DEBUG_ID]))
     end
 
     local f = state[STATE_FAILURE]
     if f then
-      io.write(string.format("} fail-link: %d\n", f[STATE_DEBUG_ID]))
+      file:write(string_fmt("} fail-link: %d\n", f[STATE_DEBUG_ID]))
     else
-      print("} fail-link: nil")
+      file:write("} fail-link: nil\n")
     end
   end
+    
+  io.close(file)
+end
+
+local function _sm_dump_dot(state_vect, vect_sz)
+  local string_fmt = string.format
+  local root = state_vect[1]
+  
+  local string_fmt = string.format
+  local file = io.open("ac.dot", "w+")
+  local indent = "  "
+
+  -- Emit prologue
+  file:write("digraph G {\n")
+  
+  -- Emit node attribute
+  file:write(string_fmt("%s%d [style=filled];\n",
+                        indent, root[STATE_DEBUG_ID]))
+  for i = 2, vect_sz do
+    local s = state_vect[i]
+    if s.is_terminal then
+      file:write(string_fmt("%s%d [shape=doublecircle];\n",
+                            indent, s[STATE_DEBUG_ID]))
+    end
+  end
+  
+  -- Emit edges
+  for i = 1, vect_sz do
+    local s = state_vect[i]
+    local sid = s[STATE_DEBUG_ID]
+    local inputs = s[STATE_INPUT]
+    for j = 1, #s[STATE_INPUT] do
+      local c = inputs[j]
+      local sink = s[STATE_GOTO][c]
+      file:write(string_fmt("%s%d -> %d [label=%c];\n",
+                            indent, sid, sink[STATE_DEBUG_ID], c))
+    end
+
+    local fail = s[STATE_FAILURE]
+    if fail and fail ~= root then
+      file:write(string_fmt("%s%d -> %d [style=dotted, color=red];\n",
+                             indent, sid, fail[STATE_DEBUG_ID]))
+    end
+  end
+
+  -- Emit epilogue
+  file:write("}")
+end
+
+local function _sm_dump(state_vect, vect_sz)
+  _sm_dump_text(state_vect, vect_sz)
+  _sm_dump_dot(state_vect, vect_sz)
+  print("State machine was dumped to ac.txt (plaint-text) and ac.dot (dotty format)")
 end
 
 local function _convert(state_vect, vect_sz)
