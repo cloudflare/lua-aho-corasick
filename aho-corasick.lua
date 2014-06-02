@@ -320,7 +320,6 @@ local function _sm_build(strs)
       goto_state[STATE_FAILURE] = fs[STATE_GOTO][c] or root
     end
   end
-
   return worklist, sz
 end
 
@@ -337,7 +336,7 @@ local function _sm_dump(state_vect, vect_sz)
     end
 
     local f = state[STATE_FAILURE]
-    if f and f[STAE_DEBUG_ID] then
+    if f then
       io.write(string.format("} fail-link: %d\n", f[STATE_DEBUG_ID]))
     else
       print("} fail-link: nil")
@@ -413,13 +412,6 @@ end
 --        Module interface functions
 --
 -- ///////////////////////////////////////////////////////////////////////////
-function M.build(strs)
-  local vect, vect_sz = _sm_build(strs)
-  if vect then
-    return _convert(vect, vect_sz)
-  end
-end
-
 -- Construct a AC graph from a vector of strings)
 function M.new(strs)
   local vect, vect_sz = _sm_build(strs)
@@ -469,14 +461,12 @@ function M.match(graph, str)
 
     if not found then
       local fail_link = state.fail_link
-      if fail_link == 0 then
-        if state ~= root then
-          return nil
-        end
-      else
+      if fail_link ~= 0 then
         -- Follow the fail-link
         state = ffi_cast(AC_NODE_ptr_t, buffer + fail_link)
         str_idx = str_idx - 1
+      else
+        -- The state == root, string move forward.
       end
     else
       local vect = _ac_get_goto_vect(state)
