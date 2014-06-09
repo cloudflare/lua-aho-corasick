@@ -23,8 +23,8 @@ LUA_API_LIB = lua5.1
 # -DDEBUG : Turn on debugging support
 # -DUSE_SLOW_VER: Use the "slow" version of the Aho-Corasink implmentation.
 #
-OPT_FLAG = -fvisibility=hidden -O3 -flto
-DEBUG_FLAGS = -Wall -g # -DDEBUG
+OPT_FLAG = -fvisibility=hidden -O3
+DEBUG_FLAGS = -Wall -g #-DDEBUG
 ARCH_FLAGS = -msse2 -msse3 -msse4.1
 COMMON_FLAGS = $(OPT_FLAG) $(DEBUG_FLAGS) $(ARCH_FLAGS)
 
