@@ -17,7 +17,6 @@ TEST = ac_test
 # LUA C API
 LUA_API_INC_DIR := /usr/include/lua5.1
 LUA_API_LIB_DIR := /usr/lib/x86_64-linux-gnu/
-LUA_API_LIB = lua5.1
 
 # Available directives:
 # -DDEBUG : Turn on debugging support
@@ -69,7 +68,7 @@ $(C_SO_NAME) : $(COMMON_OBJ) $(C_SO_OBJ)
 # Build aho-corasick.so
 $(LUA_SO_NAME) : $(COMMON_OBJ) $(LUA_SO_OBJ)
 	$(CXX) -shared -Wl,-soname=$(LUA_SO_NAME) $(SO_LFLAGS) $+ \
-        -L$(LUA_API_LIB_DIR) -l$(LUA_API_LIB) -o $@
+        -L$(LUA_API_LIB_DIR) -o $@
 
 # Build ac_test
 ac_test.o : ac_test.cxx
