@@ -1,24 +1,44 @@
 aho-corasick-lua
 ================
 
-  Lua implementation of the Aho-Corasick (AC) string matching algorithm
+  C++ and lua Implementation of the Aho-Corasick (AC) string matching algorithm
 (http://dl.acm.org/citation.cfm?id=360855).
 
-  For efficiency reasons, the output() function doesn't return a set of
-matching strings, instead, it returns no more than one matching string.
+  We began with pure LUA implementation and realize the performance is not
+satisfying. So we switch to C/C++ implementation.
 
-  This is an example illustrating how our implementation is different from
-the standard AC algorithm due to the different semantics of output() function:
-Suppose the AC-graph/dictionary represent a set of strings
-{..., "she", "he", ... }, and the string to be matched is "...123she456...".
-The stardard AC algorithm will report the given string matches both "she" and
-"he". However, our implementation reports only one match (either "she" or "he").
+  There are two shared objects provied by this package: libac.so and ahocorasick.so
+The former is a regular shared object which can be directly used by C/C++
+application, or by LUA via FFI; and the later is a lua module. An example usage
+is shown bellow:
 
-  It's not difficult to get rid of this limitation. But I don't know for sure
-if it's worth doing that at the cost of additional memory, computation and
-complexity.
+  ------------------------------------------------------------
+  local ac = require "ahocorasick"
+  local dict = {"string1", "string", "etc"}
+  local acinst = ac.create(t)
+  local r = ac.match(acinst, "mystring")
+  ------------------------------------------------------------
 
-  !!!NOTE!!!: If the dictionary is small, say having less than 50 entries,
-LUA implementation could be significantly slower than the brute-force approach
-by matching the specified string against all strings in the dictionary via
-string.find().
+  For efficiency reasons, the implementation is slightly different from the
+standard AC algorithm in that it doesn't return a set of strings in the dictionary
+that match the given string, instead it only returns one of them in case the string
+matches. The functionality of our implementation can be (precisely) described by
+following pseudo-c snippet.
+
+  ------------------------------------------------------------
+    string foo(input-string, dictionary) {
+        string ret = the-end-of-input-string;
+        for each string s in dictionary {
+            // find the first occurrence match sub-string.
+            ret = min(ret, strstr(input-string, s);
+        }
+        return ret;
+    }
+  ------------------------------------------------------------
+
+   It's pretty easy to get rid of this limitation, just to associate each state with
+a spare bit-vector dipicting the set of strings recognized by that state.
+
+   There is another limitation of this implementation: the strings in the dictionary
+should not contains '\0' at any other-than-end position. This limitation is pretty
+trivial to remove.
