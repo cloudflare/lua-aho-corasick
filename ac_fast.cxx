@@ -82,7 +82,7 @@ AC_Converter::Populate_Root_Goto_Func(AC_Buffer *buf,
     uint32 new_id = 1;
     bool full_fantout = (goto_vect.size() == 255);
     if (likely(!full_fantout))
-        bzero(root_gotos, 255*sizeof(InputTy));
+        bzero(root_gotos, 256*sizeof(InputTy));
 
     for (GotoVect::iterator i = goto_vect.begin(), e = goto_vect.end();
             i != e; i++, new_id++) {
@@ -187,6 +187,7 @@ AC_Converter::Convert() {
 static inline AC_State*
 Get_State_Addr(unsigned char* buf_base, AC_Ofst* StateOfstVect, uint32 state_id) {
     ASSERT(state_id != 0 && "root node is handled in speical way");
+    ASSERT(state_id < ((AC_Buffer*)buf_base)->state_num);
     return (AC_State*)(buf_base + StateOfstVect[state_id]);
 }
 
@@ -231,7 +232,6 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
     }
 
     int cnt = 0;
-    State_ID fl = 0;
     while (idx < len) {
         cnt ++;
         unsigned char c = str[idx];
@@ -243,7 +243,7 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
             idx++;
         } else {
             // Follow the fail-link.
-            /*State_ID*/ fl = state->fail_link;
+            State_ID fl = state->fail_link;
             if (fl == 0) {
                 // fail-link is root-node, which implies the root-node dosen't
                 // have 255 valid transitions (otherwise, the fail-link should
