@@ -22,8 +22,8 @@ ac_create(const char **str, unsigned int len) {
     return (ac_t*)(void*)hdr;
 }
 
-extern "C" ac_result_t
-ac_match(ac_t *ac, const char *str, unsigned int len) {
+static inline ac_result_t
+_match(ac_t *ac, const char *str, unsigned int len) {
     ASSERT(ac->magic_num == AC_MAGIC_NUM);
     ACS_Constructor *acc = ((ACS_Header*)(void*)ac)->impl;
     Match_Result mr = acc->Match(str, len);
@@ -31,6 +31,17 @@ ac_match(ac_t *ac, const char *str, unsigned int len) {
     r.match_begin = mr.begin;
     r.match_end = mr.end;
     return r;
+}
+
+extern "C" ac_result_t
+ac_match(ac_t *ac, const char *str, unsigned int len) {
+    return _match(ac, str, len);
+}
+
+extern "C" int
+ac_match2(ac_t *ac, const char *str, unsigned int len) {
+    ac_result_t r = _match(ac, str, len);
+    return r.match_begin;
 }
 
 extern "C" void
@@ -70,13 +81,24 @@ ac_create(const char **str, unsigned int len) {
     return (ac_t*)(void*)buf;
 }
 
-extern "C" ac_result_t
-ac_match(ac_t* ac, const char *str, unsigned int len) {
+static inline ac_result_t
+_match(ac_t* ac, const char *str, unsigned int len) {
     AC_Buffer* buf = (AC_Buffer*)(void*)ac;
     ASSERT(ac->magic_num == AC_MAGIC_NUM); 
 
     ac_result_t r = Match(buf, str, len);
     return r;
+}
+
+extern "C" ac_result_t
+ac_match(ac_t* ac, const char *str, unsigned int len) {
+    return _match(ac, str, len);
+}
+
+extern "C" int
+ac_match2(ac_t* ac, const char *str, unsigned int len) {
+    ac_result_t r = _match(ac, str, len);
+    return r.match_begin;
 }
 
 extern "C" void
