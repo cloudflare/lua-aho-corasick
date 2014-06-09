@@ -191,8 +191,8 @@ Get_State_Addr(unsigned char* buf_base, AC_Ofst* StateOfstVect, uint32 state_id)
     return (AC_State*)(buf_base + StateOfstVect[state_id]);
 }
 
-static inline int
-Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input) {
+static inline bool
+Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input, int& idx) {
     int low = 0, high = vect_len - 1;
     while (low <= high) {
         uint32 mid = (low + high)/2;
@@ -202,10 +202,12 @@ Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input) {
             high = mid - 1;
         else if (input > mid_c)
             low = mid + 1;
-        else
-            return mid;
+        else {
+            idx = mid;
+            return true;
+        }
     }
-    return -1;
+    return false;
 }
 
 ac_result_t
@@ -231,12 +233,12 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
         state = Get_State_Addr(buf_base, states_ofst_vect, *str);
     }
 
-    int cnt = 0;
     while (idx < len) {
-        cnt ++;
         unsigned char c = str[idx];
-        int res = Binary_Search_Input(state->input_vect, state->goto_num, c);
-        if (res >= 0) {
+        int res;
+        bool found;
+        found = Binary_Search_Input(state->input_vect, state->goto_num, c, res);
+        if (found) {
             // The "t = goto(c, current_state)" is valid, advance to state "t".
             uint32 kid = state->first_kid + res;
             state = Get_State_Addr(buf_base, states_ofst_vect, kid);

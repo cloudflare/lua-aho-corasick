@@ -20,11 +20,11 @@ LUA_API_LIB_DIR := /usr/lib/x86_64-linux-gnu/
 
 # Available directives:
 # -DDEBUG : Turn on debugging support
-# -DUSE_SLOW_VER: Use the "slow" version of the Aho-Corasink implmentation.
+# -DUSE_SLOW_VER : Use the "slow" version of the Aho-Corasink implmentation.
 #
-OPT_FLAG = -fvisibility=hidden -O3
+OPT_FLAG = -fvisibility=hidden -O3 #-flto
 DEBUG_FLAGS = -Wall -g #-DDEBUG
-ARCH_FLAGS = -msse2 -msse3 -msse4.1
+ARCH_FLAGS = -msse2 -msse3 -msse4.1 -march=native
 COMMON_FLAGS = $(OPT_FLAG) $(DEBUG_FLAGS) $(ARCH_FLAGS)
 
 SO_CXXFLAGS = $(COMMON_FLAGS) -fPIC 
@@ -67,8 +67,7 @@ $(C_SO_NAME) : $(COMMON_OBJ) $(C_SO_OBJ)
 
 # Build aho-corasick.so
 $(LUA_SO_NAME) : $(COMMON_OBJ) $(LUA_SO_OBJ)
-	$(CXX) -shared -Wl,-soname=$(LUA_SO_NAME) $(SO_LFLAGS) $+ \
-        -L$(LUA_API_LIB_DIR) -o $@
+	$(CXX) $+ -shared -Wl,-soname=$(LUA_SO_NAME) $(SO_LFLAGS) -o $@
 
 # Build ac_test
 ac_test.o : ac_test.cxx

@@ -10,7 +10,7 @@ typedef struct {
     ACS_Constructor* impl;
 } ACS_Header;
 
-extern "C" ac_t*
+extern "C" void*
 ac_create(const char **str, unsigned int len) {
     ACS_Constructor *acc = new ACS_Constructor();
     acc->Construct(str, len);
@@ -19,11 +19,11 @@ ac_create(const char **str, unsigned int len) {
     hdr->ac.magic_num = AC_MAGIC_NUM;
     hdr->ac.impl_variant = IMPL_SLOW_VARIANT;
     hdr->impl = acc;
-    return (ac_t*)(void*)hdr;
+    return (void*)hdr;
 }
 
 static inline ac_result_t
-_match(ac_t *ac, const char *str, unsigned int len) {
+_match(ac_t* ac, const char *str, unsigned int len) {
     ASSERT(ac->magic_num == AC_MAGIC_NUM);
     ACS_Constructor *acc = ((ACS_Header*)(void*)ac)->impl;
     Match_Result mr = acc->Match(str, len);
@@ -34,26 +34,45 @@ _match(ac_t *ac, const char *str, unsigned int len) {
 }
 
 extern "C" ac_result_t
-ac_match(ac_t *ac, const char *str, unsigned int len) {
-    return _match(ac, str, len);
+ac_match(void* ac, const char* str, unsigned int len) {
+    return _match((ac_t*)ac, str, len);
 }
 
 extern "C" int
-ac_match2(ac_t *ac, const char *str, unsigned int len) {
-    ac_result_t r = _match(ac, str, len);
+ac_match2(void* ac, const char* str, unsigned int len) {
+    ac_result_t r = _match((ac_t*)ac, str, len);
     return r.match_begin;
 }
 
 extern "C" void
-ac_free(ac_t* ac) {
-    ASSERT(ac->magic_num == AC_MAGIC_NUM);
-    ACS_Header* hdr = (ACS_Header*)(void*)ac;
+ac_free(void* ac) {
+    ASSERT(((ac_t*)ac)->magic_num == AC_MAGIC_NUM);
+    ACS_Header* hdr = (ACS_Header*)ac;
     
     delete hdr->impl;
     delete hdr;
 }
 
 #else
+static inline ac_result_t
+_match(ac_t* ac, const char *str, unsigned int len) {
+    AC_Buffer* buf = (AC_Buffer*)(void*)ac;
+    ASSERT(ac->magic_num == AC_MAGIC_NUM); 
+
+    ac_result_t r = Match(buf, str, len);
+    return r;
+}
+
+extern "C" int
+ac_match2(void* ac, const char *str, unsigned int len) {
+    ac_result_t r = _match((ac_t*)ac, str, len);
+    return r.match_begin;
+}
+
+extern "C" ac_result_t
+ac_match(void* ac, const char *str, unsigned int len) {
+    return _match((ac_t*)ac, str, len);
+}
 
 class BufAlloc : public Buf_Allocator {
 public:
@@ -71,7 +90,7 @@ public:
     }
 };
 
-extern "C" ac_t*
+extern "C" void*
 ac_create(const char **str, unsigned int len) {
     ACS_Constructor acc;
     BufAlloc ba;
@@ -81,28 +100,8 @@ ac_create(const char **str, unsigned int len) {
     return (ac_t*)(void*)buf;
 }
 
-static inline ac_result_t
-_match(ac_t* ac, const char *str, unsigned int len) {
-    AC_Buffer* buf = (AC_Buffer*)(void*)ac;
-    ASSERT(ac->magic_num == AC_MAGIC_NUM); 
-
-    ac_result_t r = Match(buf, str, len);
-    return r;
-}
-
-extern "C" ac_result_t
-ac_match(ac_t* ac, const char *str, unsigned int len) {
-    return _match(ac, str, len);
-}
-
-extern "C" int
-ac_match2(ac_t* ac, const char *str, unsigned int len) {
-    ac_result_t r = _match(ac, str, len);
-    return r.match_begin;
-}
-
 extern "C" void
-ac_free(ac_t* ac) {
+ac_free(void* ac) {
     BufAlloc::myfree((AC_Buffer*)ac);
 }
 

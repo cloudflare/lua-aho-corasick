@@ -103,7 +103,7 @@ BigFileTester::TestCore() {
         keys[i] = si->c_str();
     }
 
-    ac_t* ac = ac_create(keys, i);
+    void* ac = ac_create(keys, i);
     delete[] keys;
     keys = 0;
 
@@ -275,7 +275,7 @@ simple_test(void) {
 
         /* Create the dictionary */
         int dict_len = t.dict_len;
-        ac_t* ac = ac_create(t.dict, dict_len);
+        void* ac = ac_create(t.dict, dict_len);
 
         for (int ii = 0, ee = t.strpair_num; ii < ee; ii++, total++) {
             const StrPair& sp = t.strpairs[ii];
