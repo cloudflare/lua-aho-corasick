@@ -43,7 +43,7 @@ public:
     ACS_State(uint32 id): _id(id), _depth(0), _is_terminal(false), _fail_link(0) {}
     ~ACS_State() {};
 
-    void Set_Goto(InputTy c, ACS_State *s) { _goto_map[c] = s; }
+    void Set_Goto(InputTy c, ACS_State* s) { _goto_map[c] = s; }
     ACS_State *Get_Goto(InputTy c) const {
         ACS_Goto_Map::const_iterator iter = _goto_map.find(c);
         return iter != _goto_map.end() ? (*iter).second : 0;
@@ -60,7 +60,7 @@ public:
         sort(Gotos.begin(), Gotos.end(), GotoSort());
     }
     
-    ACS_State *Get_FailLink() const { return _fail_link; }
+    ACS_State* Get_FailLink() const { return _fail_link; }
     uint32 Get_GotoNum() const { return _goto_map.size(); }
     uint32 Get_ID() const { return _id; }
     uint32 Get_Depth() const { return _depth; }
@@ -80,10 +80,10 @@ public:
     ACS_Constructor();
     ~ACS_Constructor();
 
-    void Construct(const char **str, unsigned int strnum);
+    void Construct(const char** str, unsigned int strnum);
 
-    Match_Result Match(const char *, uint32 len) const;
-    Match_Result Match(const char *s) const { return Match(s, strlen(s)); }
+    Match_Result Match(const char*, uint32 len) const;
+    Match_Result Match(const char* s) const { return Match(s, strlen(s)); }
 #ifdef DEBUG
     void dump_text(const char* = "ac.txt") const;
     void dump_dot(const char* = "ac.dot") const;
@@ -98,13 +98,13 @@ public:
 
 private:
     void Add_String(const char *str);
-    ACS_State *new_state();
+    ACS_State* new_state();
     void Propagate_faillink();
 
 private:
-    ACS_State *_root;
-    vector<ACS_State* > _all_states;
-    unsigned char *_root_char; 
+    ACS_State* _root;
+    vector<ACS_State*> _all_states;
+    unsigned char* _root_char; 
     uint32 _next_node_id;
 };
 

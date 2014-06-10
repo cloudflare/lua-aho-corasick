@@ -3,7 +3,7 @@
 #include "ac_fast.hpp"
 
 uint32
-AC_Converter::Calc_State_Sz(const ACS_State *s) const {
+AC_Converter::Calc_State_Sz(const ACS_State* s) const {
     AC_State dummy;
     uint32 sz = offsetof(AC_State, input_vect);
     sz += s->Get_GotoNum() * sizeof(dummy.input_vect[0]);
@@ -70,7 +70,7 @@ AC_Converter::Alloc_Buffer() {
 }
 
 void
-AC_Converter::Populate_Root_Goto_Func(AC_Buffer *buf,
+AC_Converter::Populate_Root_Goto_Func(AC_Buffer* buf,
                                       GotoVect& goto_vect) {
     unsigned char *buf_base = (unsigned char*)(buf);
     InputTy* root_gotos = (InputTy*)(buf_base + buf->root_goto_ofst);
@@ -120,7 +120,7 @@ AC_Converter::Convert() {
     State_ID id = 1;
     for (GotoVect::iterator i = gotovect.begin(), e = gotovect.end();
             i != e; i++, id++) {
-        ACS_State *s = i->second;
+        ACS_State* s = i->second;
         wl.push_back(s);
         _id_map[s->Get_ID()] = id;
     }
@@ -157,7 +157,7 @@ AC_Converter::Convert() {
              i != e; i++, id++, input_idx++) {
             input_vect[input_idx] = i->first;
 
-            ACS_State *kid = i->second;
+            ACS_State* kid = i->second;
             _id_map[kid->Get_ID()] = id;
             wl.push_back(kid);
         }
@@ -216,7 +216,7 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
     unsigned char* root_goto = buf_base + buf->root_goto_ofst;
     AC_Ofst* states_ofst_vect = (AC_Ofst* )(buf_base + buf->states_ofst_ofst);
 
-    AC_State *state;
+    AC_State* state;
     uint32 idx = 0;
 
     // Skip leading chars that are not valid input of root-nodes.

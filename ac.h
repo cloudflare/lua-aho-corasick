@@ -17,9 +17,9 @@ typedef struct {
     int match_end;
 } ac_result_t;
 
-void* ac_create(const char **str_vect, unsigned int vect_len) AC_EXPORT ;
+void* ac_create(const char** str_vect, unsigned int vect_len) AC_EXPORT ;
 
-ac_result_t ac_match(void*, const char *str, unsigned int len) AC_EXPORT ;
+ac_result_t ac_match(void*, const char* str, unsigned int len) AC_EXPORT ;
 
 /* Similar to ac_match() except that it only returns match-begin. The rationale
  * for this interface is that luajit has hard time in dealing with strcture-
