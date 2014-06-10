@@ -34,11 +34,10 @@ ACS_Constructor::new_state() {
 }
 
 void
-ACS_Constructor::Add_String(const char *str) {
-    const char* p = str;
+ACS_Constructor::Add_String(const char* str, unsigned int str_len) {
     ACS_State* state = _root;
-
-    while (const char c = *p++) {
+    for (unsigned int i = 0; i < str_len; i++) {
+        const char c = str[i];
         ACS_State* new_s = state->Get_Goto(c);
         if (!new_s) {
             new_s = new_state();
@@ -101,9 +100,10 @@ ACS_Constructor::Propagate_faillink() {
 }
 
 void
-ACS_Constructor::Construct(const char **str, uint32 strnum) {
+ACS_Constructor::Construct(const char** strv, unsigned int* strlenv,
+                           uint32 strnum) {
     for (uint32 i = 0; i < strnum; i++) {
-        Add_String(str[i]);
+        Add_String(strv[i], strlenv[i]);
     }
 
     Propagate_faillink();

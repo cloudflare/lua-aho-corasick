@@ -11,9 +11,9 @@ typedef struct {
 } ACS_Header;
 
 extern "C" void*
-ac_create(const char** str, unsigned int len) {
+ac_create(const char** strv, unsigned int* strlenv, unsigned int vect_len) {
     ACS_Constructor* acc = new ACS_Constructor();
-    acc->Construct(str, len);
+    acc->Construct(strv, strlenv, vect_len);
     
     ACS_Header* hdr = new ACS_Header;
     hdr->ac.magic_num = AC_MAGIC_NUM;
@@ -91,10 +91,11 @@ public:
 };
 
 extern "C" void*
-ac_create(const char** str, unsigned int len) {
+ac_create(const char** strv, unsigned int* strlenv, unsigned int v_len) {
     ACS_Constructor acc;
+    acc.Construct(strv, strlenv, v_len);
+
     BufAlloc ba;
-    acc.Construct(str, len);
     AC_Converter cvt(acc, ba);
     AC_Buffer* buf = cvt.Convert();
     return (ac_t*)(void*)buf;

@@ -38,7 +38,3 @@ following pseudo-c snippet.
 
    It's pretty easy to get rid of this limitation, just to associate each state with
 a spare bit-vector dipicting the set of strings recognized by that state.
-
-   There is another limitation of this implementation: the strings in the dictionary
-should not contains '\0' at any other-than-end position. This limitation is pretty
-trivial to remove.

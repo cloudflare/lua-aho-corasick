@@ -96,15 +96,19 @@ BigFileTester::TestCore() {
     if (!GenerateKeys())
         return false;
 
-    const char **keys = new const char*[_keys.size()];
+    const char** keys = new const char*[_keys.size()];
+    unsigned int* keylens = new unsigned int[_keys.size()];
+
     int i = 0;
     for (vector<string>::iterator si = _keys.begin(), se = _keys.end();
          si != se; si++, i++) {
         keys[i] = si->c_str();
+        keylens[i] = strlen(keys[i]);
     }
 
-    void* ac = ac_create(keys, i);
+    void* ac = ac_create(keys, keylens, i);
     delete[] keys;
+    delete[] keylens;
     keys = 0;
 
     if (!ac)
@@ -263,9 +267,14 @@ simple_test(void) {
     for (vector<TestingCase>::iterator i = tests->begin(), e = tests->end();
             i != e; i++) {
         TestingCase& t = *i;
+        int dict_len = t.dict_len;
+        unsigned int* strlen_v = new unsigned int[dict_len];
+
         fprintf(stdout, ">Testing %s\nDictionary:[ ", t.name);
-        for (int i = 0, e = t.dict_len, need_break=0; i < e; i++) {
-            fprintf(stdout, "%s, ", t.dict[i]);
+        for (int i = 0, need_break=0; i < dict_len; i++) {
+            const char* s = t.dict[i];
+            fprintf(stdout, "%s, ", s);
+            strlen_v[i] = strlen(s);
             if (need_break++ == 16) {
                 fputs("\n  ", stdout);
                 need_break = 0;
@@ -274,8 +283,8 @@ simple_test(void) {
         fputs("]\n", stdout);
 
         /* Create the dictionary */
-        int dict_len = t.dict_len;
-        void* ac = ac_create(t.dict, dict_len);
+        void* ac = ac_create(t.dict, strlen_v, dict_len);
+        delete[] strlen_v;
 
         for (int ii = 0, ee = t.strpair_num; ii < ee; ii++, total++) {
             const StrPair& sp = t.strpairs[ii];

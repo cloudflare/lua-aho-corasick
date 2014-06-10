@@ -80,7 +80,8 @@ public:
     ACS_Constructor();
     ~ACS_Constructor();
 
-    void Construct(const char** str, unsigned int strnum);
+    void Construct(const char** strv, unsigned int* strlenv,
+                   unsigned int strnum);
 
     Match_Result Match(const char*, uint32 len) const;
     Match_Result Match(const char* s) const { return Match(s, strlen(s)); }
@@ -97,7 +98,7 @@ public:
     uint32 Get_State_Num() const { return _next_node_id - 1; }
 
 private:
-    void Add_String(const char *str);
+    void Add_String(const char* str, unsigned int str_len);
     ACS_State* new_state();
     void Propagate_faillink();
 

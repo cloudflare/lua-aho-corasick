@@ -34,19 +34,33 @@ private:
 };
 
 static bool
-_create_helper(lua_State* L, vector<const char*> strs) {
+_create_helper(lua_State* L, const vector<const char*>& str_v,
+               const vector<unsigned int>& strlen_v) {
+    ASSERT(str_v.size() == strlen_v.size());
+
     ACS_Constructor acc;
     BufAlloc ba(L);
 
     // Step 1: construt the slow version.
-    const char** str_vect = new const char*[strs.size()];
+    unsigned int strnum = str_v.size();
+    const char** str_vect = new const char*[strnum];
+    unsigned int* strlen_vect = new unsigned int[strnum];
+    
     int idx = 0;
-    for (vector<const char*>::iterator i = strs.begin(), e = strs.end();
+    for (vector<const char*>::const_iterator i = str_v.begin(), e = str_v.end();
          i != e; i++) {
         str_vect[idx++] = *i;
     }
-    acc.Construct(str_vect, idx);
+
+    idx = 0;
+    for (vector<unsigned int>::const_iterator i = strlen_v.begin(),
+            e = strlen_v.end(); i != e; i++) {
+        strlen_vect[idx++] = *i;
+    }
+
+    acc.Construct(str_vect, strlen_vect, idx);
     delete[] str_vect;
+    delete[] strlen_vect;
 
     // Step 2: convert to fast version
     AC_Converter cvt(acc, ba);
@@ -76,11 +90,15 @@ lac_create(lua_State* L) {
     // Init the "iteartor".
     lua_pushnil(L);
 
-    vector<const char*> strs;
+    vector<const char*> str_v;
+    vector<unsigned int> strlen_v;
+
     // Loop over the elements
     while (lua_next(L, input_tab)) {
-        const char* s = luaL_checkstring(L, -1);
-        strs.push_back(s);
+        size_t str_len;
+        const char* s = luaL_checklstring(L, -1, &str_len);
+        str_v.push_back(s);
+        strlen_v.push_back(str_len);
 
         // remove the value, but keep the key as the iterator.
         lua_pop(L, 1); 
@@ -89,7 +107,7 @@ lac_create(lua_State* L) {
     // pop the nil value 
     lua_pop(L, 1); 
 
-    if (_create_helper(L, strs)) {
+    if (_create_helper(L, str_v, strlen_v)) {
         // The AC graph, as a userdata is already pushed to the stack, hence 1.
         return 1;
     }
@@ -97,12 +115,11 @@ lac_create(lua_State* L) {
     return 0;
 }
 
-// LUA sematic:
-//  input: 
+// LUA input: 
 //    arg1: the userdata, representing the AC graph, returned from l_create().
 //    arg2: the string to be matched.
 //
-//  return:
+// LUA return:
 //    if match, return index range of the match; otherwise nil is returned.
 //    
 static int
