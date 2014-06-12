@@ -5,7 +5,7 @@ aho-corasick-lua
 (http://dl.acm.org/citation.cfm?id=360855).
 
   We began with pure LUA implementation and realize the performance is not
-satisfying. So we switch to C/C++ implementation.
+satisfy. So we switch to C/C++ implementation.
 
   There are two shared objects provied by this package: libac.so and ahocorasick.so
 The former is a regular shared object which can be directly used by C/C++
