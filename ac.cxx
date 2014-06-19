@@ -14,7 +14,7 @@ extern "C" void*
 ac_create(const char** strv, unsigned int* strlenv, unsigned int vect_len) {
     ACS_Constructor* acc = new ACS_Constructor();
     acc->Construct(strv, strlenv, vect_len);
-    
+
     ACS_Header* hdr = new ACS_Header;
     hdr->ac.magic_num = AC_MAGIC_NUM;
     hdr->ac.impl_variant = IMPL_SLOW_VARIANT;
@@ -48,7 +48,7 @@ extern "C" void
 ac_free(void* ac) {
     ASSERT(((ac_t*)ac)->magic_num == AC_MAGIC_NUM);
     ACS_Header* hdr = (ACS_Header*)ac;
-    
+
     delete hdr->impl;
     delete hdr;
 }
@@ -57,7 +57,7 @@ ac_free(void* ac) {
 static inline ac_result_t
 _match(ac_t* ac, const char* str, unsigned int len) {
     AC_Buffer* buf = (AC_Buffer*)(void*)ac;
-    ASSERT(ac->magic_num == AC_MAGIC_NUM); 
+    ASSERT(ac->magic_num == AC_MAGIC_NUM);
 
     ac_result_t r = Match(buf, str, len);
     return r;
@@ -84,7 +84,7 @@ public:
     virtual void free() {}
 
     static void myfree(AC_Buffer* buf) {
-        ASSERT(buf->hdr.magic_num == AC_MAGIC_NUM); 
+        ASSERT(buf->hdr.magic_num == AC_MAGIC_NUM);
         const char* b = (const char*)buf;
         delete[] b;
     }

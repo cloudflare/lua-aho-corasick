@@ -7,10 +7,10 @@ AC_Converter::Calc_State_Sz(const ACS_State* s) const {
     AC_State dummy;
     uint32 sz = offsetof(AC_State, input_vect);
     sz += s->Get_GotoNum() * sizeof(dummy.input_vect[0]);
-    
+
     if (sz < sizeof(AC_State))
         sz = sizeof(AC_State);
-    
+
     uint32 align = __alignof__(dummy);
     sz = (sz + align - 1) & ~(align - 1);
     return sz;
@@ -27,9 +27,9 @@ AC_Converter::Alloc_Buffer() {
 
     // part 1 :  buffer header
     uint32 sz = root_goto_ofst = sizeof(AC_Buffer);
-    
+
     // part 2: Root-node's goto function
-    if (likely(root_fanout != 255)) 
+    if (likely(root_fanout != 255))
         sz += 256;
     else
         root_goto_ofst = 0;
@@ -54,7 +54,7 @@ AC_Converter::Alloc_Buffer() {
     state_sz -= Calc_State_Sz(root_state);
 
     sz += state_sz;
-    
+
     // Step 2: Allocate buffer, and populate header.
     AC_Buffer* buf = _buf_alloc.alloc(sz);
 
@@ -108,7 +108,7 @@ AC_Converter::Convert() {
     // Step 2: allocate buffer to accommodate the entire AC graph.
     AC_Buffer* buf = Alloc_Buffer();
     unsigned char* buf_base = (unsigned char*)buf;
-    
+
     // Step 3: Root node need special care.
     Populate_Root_Goto_Func(buf, gotovect);
     buf->root_goto_num = gotovect.size();
@@ -180,7 +180,7 @@ AC_Converter::Convert() {
     }
 #ifdef DEBUG
     //dump_buffer(buf, stderr);
-#endif    
+#endif
     return buf;
 }
 
@@ -264,7 +264,7 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
                 state = Get_State_Addr(buf_base, states_ofst_vect, fl);
             }
         }
-        
+
         // Check to see if the state is terminal state?
         if (state->is_term) {
             ac_result_t r;
@@ -329,8 +329,8 @@ AC_Converter::dump_buffer(AC_Buffer* buf, FILE* f) {
         State_ID kid = s->first_kid;
         for (uint32 k = 0, ke = s->goto_num; k < ke; k++, kid++)
             fprintf(f, "%c->S:%d, ", s->input_vect[k], kid);
-        
-        fprintf(f, "}, fail-link = S:%d, %s\n", s->fail_link, 
+
+        fprintf(f, "}, fail-link = S:%d, %s\n", s->fail_link,
                 s->is_term ? "terminal" : "");
     }
 }

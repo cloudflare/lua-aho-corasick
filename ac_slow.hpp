@@ -59,7 +59,7 @@ public:
         }
         sort(Gotos.begin(), Gotos.end(), GotoSort());
     }
-    
+
     ACS_State* Get_FailLink() const { return _fail_link; }
     uint32 Get_GotoNum() const { return _goto_map.size(); }
     uint32 Get_ID() const { return _id; }
@@ -105,7 +105,7 @@ private:
 private:
     ACS_State* _root;
     vector<ACS_State*> _all_states;
-    unsigned char* _root_char; 
+    unsigned char* _root_char;
     uint32 _next_node_id;
 };
 

@@ -72,7 +72,7 @@ ACS_Constructor::Propagate_faillink() {
     for (uint32 i = 0; i < wl.size(); i++) {
         ACS_State* s = wl[i];
         ACS_State* fl = s->_fail_link;
-        
+
         const ACS_Goto_Map& tran_map = s->Get_Goto_Map();
 
         for (ACS_Goto_Map::const_iterator ii = tran_map.begin(),
@@ -107,12 +107,12 @@ ACS_Constructor::Construct(const char** strv, unsigned int* strlenv,
     }
 
     Propagate_faillink();
-    unsigned char* p = _root_char; 
+    unsigned char* p = _root_char;
 
     const ACS_Goto_Map& m = _root->Get_Goto_Map();
     for (ACS_Goto_Map::const_iterator i = m.begin(), e = m.end();
             i != e; i++) {
-        p[i->first] = 1; 
+        p[i->first] = 1;
     }
 }
 
@@ -147,7 +147,7 @@ ACS_Constructor::Match(const char *str, uint32 len)  const {
                     }
                 }
             } else {
-                state = fl;  
+                state = fl;
             }
         } else {
             idx ++;
@@ -216,7 +216,7 @@ ACS_Constructor::dump_dot(const char *dotfile) const {
         }
     }
     fprintf(f, "\n");
-    
+
     // Emit edge information
     for (std::vector<ACS_State*>::const_iterator i = _all_states.begin(),
             e = _all_states.end(); i != e; i++) {
@@ -234,7 +234,7 @@ ACS_Constructor::dump_dot(const char *dotfile) const {
             else
                 fprintf(f, "%s%d -> %d [label=\"%#x\"];\n",
                         indent, id, tran->Get_ID(), input);
-            
+
         }
 
         // Emit fail-link

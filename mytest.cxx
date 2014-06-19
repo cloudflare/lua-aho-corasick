@@ -7,7 +7,7 @@ using namespace std;
 
 /////////////////////////////////////////////////////////////////////////
 //
-//         Test using strings from input files     
+//         Test using strings from input files
 //
 /////////////////////////////////////////////////////////////////////////
 //
@@ -50,7 +50,7 @@ public:
           StrPair strpairs[], int strpair_num) {
         if (!_tests)
             _tests = new vector<TestingCase>;
-        
+
         TestingCase tc;
         tc.name = name;
         tc.dict = dict;
@@ -114,7 +114,7 @@ simple_test(void) {
                 fail ++;
                 continue;
             }
-            
+
             // If the string is not supposed to match the dictionary.
             if (!match) {
                 if (m_b != -1 || m_e != -1) {
@@ -166,7 +166,7 @@ StrPair strpair1[] = {
     {"shis2", "his"}, {"ahhe", "he"}
 };
 Tests test1("test 1",
-            dict1, sizeof(dict1)/sizeof(dict1[0]), 
+            dict1, sizeof(dict1)/sizeof(dict1[0]),
             strpair1, sizeof(strpair1)/sizeof(strpair1[0]));
 
 /* test 2*/

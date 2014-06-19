@@ -45,7 +45,7 @@ _create_helper(lua_State* L, const vector<const char*>& str_v,
     unsigned int strnum = str_v.size();
     const char** str_vect = new const char*[strnum];
     unsigned int* strlen_vect = new unsigned int[strnum];
-    
+
     int idx = 0;
     for (vector<const char*>::const_iterator i = str_v.begin(), e = str_v.end();
          i != e; i++) {
@@ -70,7 +70,7 @@ _create_helper(lua_State* L, const vector<const char*>& str_v,
 static ac_result_t
 _match_helper(ac_t* ac, const char *str, unsigned int len) {
     AC_Buffer* buf = (AC_Buffer*)(void*)ac;
-    ASSERT(ac->magic_num == AC_MAGIC_NUM); 
+    ASSERT(ac->magic_num == AC_MAGIC_NUM);
 
     ac_result_t r = Match(buf, str, len);
     return r;
@@ -83,7 +83,7 @@ _match_helper(ac_t* ac, const char *str, unsigned int len) {
 static int
 lac_create(lua_State* L) {
     // The table of the array must be the 1st argument.
-    int input_tab = 1;    
+    int input_tab = 1;
 
     luaL_checktype(L, input_tab, LUA_TTABLE);
 
@@ -101,27 +101,27 @@ lac_create(lua_State* L) {
         strlen_v.push_back(str_len);
 
         // remove the value, but keep the key as the iterator.
-        lua_pop(L, 1); 
+        lua_pop(L, 1);
     }
 
-    // pop the nil value 
-    lua_pop(L, 1); 
+    // pop the nil value
+    lua_pop(L, 1);
 
     if (_create_helper(L, str_v, strlen_v)) {
         // The AC graph, as a userdata is already pushed to the stack, hence 1.
         return 1;
     }
- 
+
     return 0;
 }
 
-// LUA input: 
+// LUA input:
 //    arg1: the userdata, representing the AC graph, returned from l_create().
 //    arg2: the string to be matched.
 //
 // LUA return:
 //    if match, return index range of the match; otherwise nil is returned.
-//    
+//
 static int
 lac_match(lua_State* L) {
     ac_t* ac = (ac_t*)lua_touserdata(L, 1);
@@ -141,7 +141,7 @@ lac_match(lua_State* L) {
         luaL_checkstring(L, 2);
         return 0;
     }
-    
+
     ac_result_t r = _match_helper(ac, str, len);
     if (r.match_begin != -1) {
         lua_pushinteger(L, r.match_begin);

@@ -15,7 +15,7 @@ using namespace std;
 
 /////////////////////////////////////////////////////////////////////////
 //
-//         Test using strings from input files     
+//         Test using strings from input files
 //
 /////////////////////////////////////////////////////////////////////////
 //
@@ -86,7 +86,7 @@ BigFileTester::GenerateKeys() {
         const char* key = msg + ofst + idx % rofstsz;
         int key_len = key_min_len + idx % (key_max_len - key_min_len);
         _keys.push_back(string(key, key_len));
-        ofst += chunk_sz; 
+        ofst += chunk_sz;
     }
     return true;
 }
@@ -129,11 +129,11 @@ BigFileTester::TestCore() {
             fail ++;
             continue;
         }
-        
+
         const char* match_str = _msg + len;
         int strstr_len = 0;
         int key_idx = -1;
-        
+
         for (int i = 0, e = _keys.size(); i != e; i++) {
             const char* key = _keys[i].c_str();
             if (const char *m = strstr(substring, key)) {
@@ -174,7 +174,7 @@ BigFileTester::Test() {
         perror("open");
         return false;
     }
-        
+
     struct stat sb;
     if (fstat(fd, &sb) == -1) {
         perror("fstat");
@@ -200,7 +200,7 @@ BigFileTester::Test() {
     p[map_sz - 1] = 0;
     _msg = (const char*)p;
     _msg_len = map_sz;
-    
+
     bool res = TestCore();
 
     munmap(p, map_sz);
@@ -236,7 +236,7 @@ public:
           StrPair strpairs[], int strpair_num) {
         if (!_tests)
             _tests = new vector<TestingCase>;
-        
+
         TestingCase tc;
         tc.name = name;
         tc.dict = dict;
@@ -305,7 +305,7 @@ simple_test(void) {
                 fail ++;
                 continue;
             }
-            
+
             // If the string is not supposed to match the dictionary.
             if (!match) {
                 if (m_b != -1 || m_e != -1) {
@@ -347,7 +347,7 @@ int
 main (int argc, char** argv) {
     int res = simple_test();
     bool succ = res == 0 ? true : false;
-    
+
     for (int i = 1; i < argc; i++) {
         BigFileTester bft(argv[i]);
         succ = bft.Test() && succ;
@@ -364,7 +364,7 @@ StrPair strpair1[] = {
     {"shis2", "his"}, {"ahhe", "he"}
 };
 Tests test1("test 1",
-            dict1, sizeof(dict1)/sizeof(dict1[0]), 
+            dict1, sizeof(dict1)/sizeof(dict1[0]),
             strpair1, sizeof(strpair1)/sizeof(strpair1[0]));
 
 /* test 2*/

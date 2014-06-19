@@ -12,7 +12,7 @@ class ACS_Constructor;
 typedef uint32 AC_Ofst;
 typedef uint32 State_ID;
 
-// The entire "fast" AC graph is converted from its "slow" version, and store 
+// The entire "fast" AC graph is converted from its "slow" version, and store
 // in an consecutive trunk of memory or "buffer". Since the pointers in the
 // fast AC graph are represented as offset relative to the base address of
 // the buffer, this fast AC graph is position-independent, meaning cloning
@@ -25,11 +25,11 @@ typedef uint32 State_ID;
 //      root-node's valid inputs, and the element is the ID of the corresponding
 //      transition state (aka kid). To save space, we used 8-bit to represent
 //      the IDs. ID of root's kids starts with 1.
-//      
+//
 //        Root may have 255 valid inputs. In this speical case, i-th element
 //      stores value i -- i.e the i-th state. So, we don't need such array
 //      at all. On the other hand, 8-bit is insufficient to encode kids' ID.
-// 
+//
 //   3. An array indiced by state's id, and the element is the offset
 //      of correspoding state wrt the base address of the buffer.
 //
@@ -37,7 +37,7 @@ typedef uint32 State_ID;
 //
 typedef struct {
     ac_t hdr;                 // The header exposed to the user using this lib.
-    uint32 buf_len; 
+    uint32 buf_len;
     AC_Ofst root_goto_ofst;   // addr of root node's goto() function.
     AC_Ofst states_ofst_ofst; // addr of state pointer vector (indiced by id)
     AC_Ofst first_state_ofst; // addr of the first state in the buffer.
@@ -109,7 +109,7 @@ private:
 
     // map: ID of state in slow-graph -> ID of counterpart in fast-graph.
     vector<uint32> _id_map;
-    
+
     // map: ID of state in slow-graph -> offset of counterpart in fast-graph.
     vector<AC_Ofst> _ofst_map;
 };
