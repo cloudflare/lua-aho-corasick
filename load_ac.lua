@@ -1,5 +1,5 @@
--- Helper wrappring script for loading shared object libac.so from package.cpath
--- instead of LD_LIBRARTY_PATH
+-- Helper wrappring script for loading shared object libac.so (FFI interface)
+-- from package.cpath instead of LD_LIBRARTY_PATH.
 --
 
 local ffi = require 'ffi'
@@ -75,7 +75,10 @@ end
 
 -- Return nil if str doesn't match the dictionary, else return non-nil.
 function _M.match(ac, str)
-    return ac_match(ac, str, #str)
+    local r = ac_match(ac, str, #str);
+    if r >= 0 then
+        return r
+    end
 end
 
 return _M
