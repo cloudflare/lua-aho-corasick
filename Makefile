@@ -16,9 +16,10 @@ TEST = ac_test
 
 PREFIX = /usr/local
 LUA_VERSION := 5.1
-LUA_INCLUDE_DIR := /usr/include/lua$(LUA_VERSION)
-SO_TARGET_DIR := /usr/local/lib/lua/$(LUA_VERSION)
-LUA_TARGET_DIR := /usr/local/share/lua/$(LUA_VERSION)
+PREFIX = /usr/local
+LUA_INCLUDE_DIR := $(PREFIX)/include/lua$(LUA_VERSION)
+SO_TARGET_DIR := $(PREFIX)/lib/lua/$(LUA_VERSION)
+LUA_TARGET_DIR := $(PREFIX)/share/lua/$(LUA_VERSION)
 
 # Available directives:
 # -DDEBUG : Turn on debugging support
@@ -102,7 +103,7 @@ clean :
 	-rm -f *.o *.d dep.txt $(TEST) $(C_SO_NAME) $(LUA_SO_NAME) $(TEST)
 
 install:
-	install -D -m 755 $(C_SO_NAME) $(SO_TARGET_DIR)/$(C_SO_NAME)
-	install -D -m 755 $(LUA_SO_NAME) $(SO_TARGET_DIR)/$(LUA_SO_NAME)
-	install -D -m 664 load_ac.lua $(LUA_TARGET_DIR)/load_ac.lua
+	install -D -m 755 $(C_SO_NAME) $(DESTDIR)/$(SO_TARGET_DIR)/$(C_SO_NAME)
+	install -D -m 755 $(LUA_SO_NAME) $(DESTDIR)/$(SO_TARGET_DIR)/$(LUA_SO_NAME)
+	install -D -m 664 load_ac.lua $(DESTDIR)/$(LUA_TARGET_DIR)/load_ac.lua
 
