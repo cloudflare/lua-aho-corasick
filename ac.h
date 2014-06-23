@@ -6,12 +6,6 @@ extern "C" {
 
 #define AC_EXPORT __attribute__ ((visibility ("default")))
 
-#define AC_MAGIC_NUM 0x5a
-typedef struct {
-    unsigned char magic_num;
-    unsigned char impl_variant;
-} ac_t;
-
 typedef struct {
     int match_begin;
     int match_end;

@@ -4,7 +4,7 @@
 #include <string>
 #include "ac_slow.hpp"
 #include "ac_fast.hpp"
-#include "ac.h" // for the definition of ac_t and ac_result_t
+#include "ac.h" // for the definition of ac_result_t
 #include "ac_util.hpp"
 
 extern "C" {
@@ -68,7 +68,7 @@ _create_helper(lua_State* L, const vector<const char*>& str_v,
 }
 
 static ac_result_t
-_match_helper(ac_t* ac, const char *str, unsigned int len) {
+_match_helper(buf_header_t* ac, const char *str, unsigned int len) {
     AC_Buffer* buf = (AC_Buffer*)(void*)ac;
     ASSERT(ac->magic_num == AC_MAGIC_NUM);
 
@@ -124,7 +124,7 @@ lac_create(lua_State* L) {
 //
 static int
 lac_match(lua_State* L) {
-    ac_t* ac = (ac_t*)lua_touserdata(L, 1);
+    buf_header_t* ac = (buf_header_t*)lua_touserdata(L, 1);
     if (!ac) {
         luaL_checkudata(L, 1, tname);
         return 0;

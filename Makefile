@@ -6,7 +6,6 @@
 #
 C_SO_NAME = libac.so
 LUA_SO_NAME = ahocorasick.so
-TEST = ac_test
 
 #############################################################################
 #
@@ -40,7 +39,7 @@ NON_SO_FLAGS = $(COMMON_FLAGS)
 #############################################################################
 #
 .PHONY = all clean test
-all : $(C_SO_NAME) $(LUA_SO_NAME) $(TEST)
+all : $(C_SO_NAME) $(LUA_SO_NAME) test
 	-cat *.d > dep.txt
 
 -include dep.txt
@@ -70,28 +69,8 @@ $(C_SO_NAME) : $(COMMON_OBJ) $(C_SO_OBJ)
 $(LUA_SO_NAME) : $(COMMON_OBJ) $(LUA_SO_OBJ)
 	$(CXX) $+ -shared -Wl,-soname=$(LUA_SO_NAME) $(SO_LFLAGS) -o $@
 
-# Build ac_test
-ac_test.o : ac_test.cxx
-	$(CXX) $< -c $(NON_SO_CXXFLAGS) -MMD
-
-$(TEST) : $(C_SO_NAME) ac_test.o
-	$(CXX) ac_test.o $(C_SO_NAME) -o $@
-
-#############################################################################
-#
-#           Testing stuff
-#
-#############################################################################
-#
-test:$(TEST) testinput/text.tar
-	./$(TEST) testinput/*
-
-testinput/text.tar:
-	echo "download testing files (gcc tarball)..."
-	[ ! -d testinput ] && mkdir testinput  && \
-	cd testinput && \
-    curl ftp://ftp.gnu.org/gnu/gcc/gcc-1.42.tar.gz -o text.tar.gz 2>/dev/null \
-    && gzip -d text.tar.gz
+test : $(C_SO_NAME)
+	$(MAKE) -C tests
 
 #############################################################################
 #
