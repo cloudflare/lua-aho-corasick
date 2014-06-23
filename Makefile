@@ -39,7 +39,7 @@ NON_SO_FLAGS = $(COMMON_FLAGS)
 #############################################################################
 #
 .PHONY = all clean test
-all : $(C_SO_NAME) $(LUA_SO_NAME) test
+all : $(C_SO_NAME) $(LUA_SO_NAME)
 	-cat *.d > dep.txt
 
 -include dep.txt
