@@ -1,15 +1,15 @@
 aho-corasick-lua
 ================
 
-  C++ and lua Implementation of the Aho-Corasick (AC) string matching algorithm
+  C++ and Lua Implementation of the Aho-Corasick (AC) string matching algorithm
 (http://dl.acm.org/citation.cfm?id=360855).
 
-  We began with pure LUA implementation and realize the performance is not
+  We began with pure Lua implementation and realize the performance is not
 satisfy. So we switch to C/C++ implementation.
 
   There are two shared objects provied by this package: libac.so and ahocorasick.so
 The former is a regular shared object which can be directly used by C/C++
-application, or by LUA via FFI; and the later is a lua module. An example usage
+application, or by Lua via FFI; and the later is a Lua module. An example usage
 is shown bellow:
 
   ------------------------------------------------------------
