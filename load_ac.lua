@@ -25,14 +25,17 @@ local ac_match = nil
 local function find_shared_obj(cpath, so_name)
     for k, v in string_gmatch(cpath, "[^;]+") do
         local so_path = string_match(k, "(.*/)")
-        so_path = so_path .. so_name
+        if so_path then
+            -- "so_path" could be nil. e.g, the dir path component is "."
+            so_path = so_path .. so_name
 
-        -- Don't get me wrong, the only way to know if a file exist is trying
-        -- to open it.
-        local f = io.open(so_path)
-        if f ~= nil then
-            io.close(f)
-            return so_path
+            -- Don't get me wrong, the only way to know if a file exist is
+            -- trying to open it.
+            local f = io.open(so_path)
+            if f ~= nil then
+                io.close(f)
+                return so_path
+            end
         end
     end
 end
@@ -70,7 +73,9 @@ function _M.create_ac(dict)
     end
 
     local ac = ac_create(str_v, strlen_v, strnum);
-    return ac and ffi.gc(ac, ac_free)
+    if ac ~= nil then
+        return ffi.gc(ac, ac_free)
+    end
 end
 
 -- Return nil if str doesn't match the dictionary, else return non-nil.

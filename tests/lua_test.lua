@@ -1,3 +1,5 @@
+-- This script is to test ahocorasick.so not libac.so
+--
 local ac = require "ahocorasick"
 
 local ac_create = ac.create
@@ -5,9 +7,10 @@ local ac_match = ac.match
 local string_fmt = string.format
 local string_sub = string.sub
 
+local err_cnt = 0
 local function mytest(testname, dict, match, notmatch)
     print(">Testing ", testname)
-    
+
     io.write(string_fmt("Dictionary: "));
     for i=1, #dict do
        io.write(string_fmt("%s, ", dict[i]))
@@ -22,9 +25,12 @@ local function mytest(testname, dict, match, notmatch)
         local b, e = ac_match(ac_inst, str)
         if b and e and (string_sub(str, b+1, e+1) == substr) then
             print "pass"
-        else 
+        else
+            err_cnt = err_cnt + 1
             print "fail"
         end
+        print("gc is called")
+        collectgarbage()
     end
 
     if notmatch == nil then
@@ -36,10 +42,12 @@ local function mytest(testname, dict, match, notmatch)
         io.write(string_fmt("*Matching %s, ", str))
         local r = ac_match(ac_inst, str)
         if r then
+            err_cnt = err_cnt + 1
             print("fail")
         else
             print("succ")
         end
+        collectgarbage()
     end
 end
 
@@ -49,9 +57,11 @@ mytest("test1",
        { {"he", "he"}, {"she", "she"}, {"his", "his"}, {"hers", "he"},
          {"ahe", "he"}, {"shhe", "he"}, {"shis2", "his"}, {"ahhe", "he"},
          {"str\0ing", "str\0ing"}
-       }, 
-        
+       },
+
        -- not matching case
        {"str\0", "str"}
 
        )
+
+os.exit((err_cnt == 0) and 0 or 1)

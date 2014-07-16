@@ -70,7 +70,9 @@ $(LUA_SO_NAME) : $(COMMON_OBJ) $(LUA_SO_OBJ)
 	$(CXX) $+ -shared -Wl,-soname=$(LUA_SO_NAME) $(SO_LFLAGS) -o $@
 
 test : $(C_SO_NAME)
-	$(MAKE) -C tests
+	$(MAKE) -C tests && \
+	luajit tests/lua_test.lua && \
+	luajit tests/load_ac_test.lua
 
 #############################################################################
 #
