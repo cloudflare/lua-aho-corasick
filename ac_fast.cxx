@@ -216,48 +216,37 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
     unsigned char* root_goto = buf_base + buf->root_goto_ofst;
     AC_Ofst* states_ofst_vect = (AC_Ofst* )(buf_base + buf->states_ofst_ofst);
 
-    State_ID next_state = 0;
+    AC_State* state;
     uint32 idx = 0;
 
     // Skip leading chars that are not valid input of root-nodes.
     if (likely(buf->root_goto_num != 255)) {
         while(idx < len) {
-            InputTy c = str[idx++];
-            if ((next_state = root_goto[c]) != 0) {
+            unsigned char c = str[idx++];
+            if (unsigned char kid_id = root_goto[c]) {
+                state = Get_State_Addr(buf_base, states_ofst_vect, kid_id);
                 break;
             }
         }
     } else {
         idx = 1;
-        next_state = *str;
+        state = Get_State_Addr(buf_base, states_ofst_vect, *str);
     }
 
-    while (idx <= len) {
-        AC_State* state = Get_State_Addr(buf_base, states_ofst_vect, next_state);
-        // Check to see if the state is terminal state?
-        if (state->is_term) {
-            ac_result_t r;
-            r.match_begin = idx - state->depth;
-            r.match_end = idx - 1;
-            return r;
-        }
-
-        if (idx >= len) {
-            break;
-        }
-
-        InputTy c = str[idx];
+    while (idx < len) {
+        unsigned char c = str[idx];
         int res;
         bool found;
         found = Binary_Search_Input(state->input_vect, state->goto_num, c, res);
         if (found) {
             // The "t = goto(c, current_state)" is valid, advance to state "t".
-            next_state = state->first_kid + res;
+            uint32 kid = state->first_kid + res;
+            state = Get_State_Addr(buf_base, states_ofst_vect, kid);
             idx++;
         } else {
             // Follow the fail-link.
-            next_state = state->fail_link;
-            if (next_state == 0) {
+            State_ID fl = state->fail_link;
+            if (fl == 0) {
                 // fail-link is root-node, which implies the root-node dosen't
                 // have 255 valid transitions (otherwise, the fail-link should
                 // points to "goto(root, c)"), so we don't need speical handling
@@ -265,11 +254,23 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
                 //
                 while(idx < len) {
                     InputTy c = str[idx++];
-                    if ((next_state = root_goto[c]) != 0) {
+                    if (unsigned char kid_id = root_goto[c]) {
+                        state =
+                            Get_State_Addr(buf_base, states_ofst_vect, kid_id);
                         break;
                     }
                 }
+            } else {
+                state = Get_State_Addr(buf_base, states_ofst_vect, fl);
             }
+        }
+
+        // Check to see if the state is terminal state?
+        if (state->is_term) {
+            ac_result_t r;
+            r.match_begin = idx - state->depth;
+            r.match_end = idx - 1;
+            return r;
         }
     }
 
