@@ -233,6 +233,14 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
         state = Get_State_Addr(buf_base, states_ofst_vect, *str);
     }
 
+    if (unlikely(state->is_term)) {
+        /* Dictionary may have string of length 1 */
+        ac_result_t r;
+        r.match_begin = idx - state->depth;
+        r.match_end = idx - 1;
+        return r;
+    }
+
     while (idx < len) {
         unsigned char c = str[idx];
         int res;

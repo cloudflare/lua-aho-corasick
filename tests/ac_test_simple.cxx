@@ -202,3 +202,7 @@ Tests test7("test 7", dict7, 1, strpair7, 1);
 const char *dict8[] = {"aaab"};
 StrPair strpair8[] = {{"aaaaaaab", "aaab"}};
 Tests test8("test 8", dict8, 1, strpair8, 1);
+
+const char *dict9[] = {"z"};
+StrPair strpair9[] = {{"aaaaz", "z"}, {"z", "z"}};
+Tests test9("test 9", dict9, 1, strpair9, 2);
