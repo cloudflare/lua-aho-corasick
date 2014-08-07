@@ -206,3 +206,10 @@ Tests test8("test 8", dict8, 1, strpair8, 1);
 const char *dict9[] = {"z"};
 StrPair strpair9[] = {{"aaaaz", "z"}, {"z", "z"}};
 Tests test9("test 9", dict9, 1, strpair9, 2);
+
+/* test the case when input string dosen't contain even a single char
+ * of the pattern in dictionary.
+ */
+const char *dict10[] = {"abc"};
+StrPair strpair10[] = {{"cde", 0}};
+Tests test10("test 10", dict10, 1, strpair10, 1);

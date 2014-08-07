@@ -216,7 +216,7 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
     unsigned char* root_goto = buf_base + buf->root_goto_ofst;
     AC_Ofst* states_ofst_vect = (AC_Ofst* )(buf_base + buf->states_ofst_ofst);
 
-    AC_State* state;
+    AC_State* state = 0;
     uint32 idx = 0;
 
     // Skip leading chars that are not valid input of root-nodes.
@@ -233,12 +233,14 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
         state = Get_State_Addr(buf_base, states_ofst_vect, *str);
     }
 
-    if (unlikely(state->is_term)) {
-        /* Dictionary may have string of length 1 */
-        ac_result_t r;
-        r.match_begin = idx - state->depth;
-        r.match_end = idx - 1;
-        return r;
+    if (likely(state != 0)) {
+        if (unlikely(state->is_term)) {
+            /* Dictionary may have string of length 1 */
+            ac_result_t r;
+            r.match_begin = idx - state->depth;
+            r.match_end = idx - 1;
+            return r;
+        }
     }
 
     while (idx < len) {
