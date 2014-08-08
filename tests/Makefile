@@ -1,6 +1,7 @@
-.PHONY = all clean test runtest
+.PHONY = all clean test runtest benchmark
 
 PROGRAM = ac_test
+BENCHMARK = ac_bench
 all: runtest
 
 CXXFLAGS = -O3 -g -march=native -Wall -DDEBUG
@@ -13,15 +14,23 @@ SRC = test_main.cxx ac_test_simple.cxx ac_test_aggr.cxx test_bigfile.cxx
 
 OBJ = ${SRC:.cxx=.o}
 
--include dep.txt
+-include test_dep.txt
+-include bench_dep.txt
 
-$(PROGRAM) : testinput/text.tar testinput/image.bin
+$(PROGRAM) $(BENCHMARK) : testinput/text.tar testinput/image.bin
 $(PROGRAM) : $(OBJ) ../libac.so
 	$(CXX) $(OBJ) -L.. -lac -o $@
-	-cat *.d > dep.txt
+	-cat *.d > test_dep.txt
+
+$(BENCHMARK) : ac_bench.o ../libac.so
+	$(CXX) ac_bench.o -L.. -lac -o $@
+	-cat *.d > bench_dep.txt
 
 runtest:$(PROGRAM)
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):.. ./$(PROGRAM) testinput/*
+
+benchmark:$(BENCHMARK)
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):.. ./ac_bench
 
 testinput/text.tar:
 	echo "download testing files (gcc tarball)..."
@@ -36,4 +45,4 @@ testinput/image.bin:
 	curl http://www.3dvisionlive.com/sites/default/files/Curiosity_render_hiresb.jpg -o $@ 2>/dev/null
 
 clean:
-	-rm -f *.o *.d dep.txt $(PROGRAM)
+	-rm -f *.o *.d dep.txt $(PROGRAM) $(BENCHMARK)
