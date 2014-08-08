@@ -38,7 +38,7 @@ NON_SO_FLAGS = $(COMMON_FLAGS)
 #
 #############################################################################
 #
-.PHONY = all clean test
+.PHONY = all clean test benchmark
 all : $(C_SO_NAME) $(LUA_SO_NAME)
 	-cat *.d > dep.txt
 
@@ -73,6 +73,9 @@ test : $(C_SO_NAME)
 	$(MAKE) -C tests && \
 	luajit tests/lua_test.lua && \
 	luajit tests/load_ac_test.lua
+
+benchmark: $(C_SO_NAME)
+	$(MAKE) benchmark -C tests
 
 #############################################################################
 #
