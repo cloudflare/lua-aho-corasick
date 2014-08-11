@@ -22,6 +22,12 @@ using namespace std;
 
 static bool SomethingWrong = false;
 
+static int iteration = 300;
+static string dict_dir;
+static string obj_file_dir;
+static bool print_help = false;
+static int piece_size = 1024;
+
 class PatternSet {
 public:
     PatternSet(const char* filepath);
@@ -329,25 +335,35 @@ Benchmark::Run(int iteration) {
         return false;
     }
 
+    int piece_num = _file_sz/piece_size;
+
     _timer.Start(false);
-    for (int i = 0; i < iteration; i++)
-        ac_match2(ac, _mmap, _file_sz);
+
+    /* Stupid compiler may not be able to promote piece_size into register.
+     * Do it manually.
+     */
+    int piece_sz = piece_size;
+    for (int i = 0; i < iteration; i++) {
+        size_t match_ofst = 0;
+        for (int piece_idx = 0; piece_idx <  piece_num; piece_idx ++) {
+            ac_match2(ac, _mmap + match_ofst, piece_sz);
+            match_ofst += piece_sz;
+        }
+        if (match_ofst != _file_sz)
+            ac_match2(ac, _mmap + match_ofst, _file_sz - match_ofst);
+    }
     _timer.Stop();
     return true;
 }
 
-const char* short_opt = "hd:f:i:";
+const char* short_opt = "hd:f:i:p:";
 const struct option long_opts[] = {
     {"help",            no_argument,        0, 'h'},
     {"iteration",       required_argument,  0, 'i'},
     {"dictionary-dir",  required_argument,  0, 'd'},
     {"obj-file-dir",    required_argument,  0, 'f'},
+    {"piece-size",      required_argument,  0, 'p'},
 };
-
-static int iteration = 1000;
-string dict_dir;
-string obj_file_dir;
-bool print_help = false;
 
 static void
 PrintHelp(const char* prog_name) {
@@ -356,7 +372,11 @@ PrintHelp(const char* prog_name) {
 "  -d, --dictionary-dir  : specify the dictionary directory (./dict by default)\n"
 "  -f, --obj-file-dir    : specify the object file directory\n"
 "                          (./testinput by default)\n"
-"  -i, --iteration       : Run this many iteration for each pattern match\n";
+"  -i, --iteration       : Run this many iteration for each pattern match\n"
+"  -p, --piece-size      : The size of 'piece' in byte. The input file is\n"
+"                          divided into pieces, and match function is working\n"
+"                          on one piece at a time. The default size of piece\n"
+"                          is 1k byte.\n";
 
     fprintf(stdout, msg, prog_name);
 }
@@ -377,10 +397,12 @@ getOptions(int argc, char** argv) {
 
         switch(c) {
         case 'h':
-            print_help = true; break;
+            print_help = true;
+            break;
 
         case 'i':
-            iteration = atol(optarg); break;
+            iteration = atol(optarg);
+            break;
 
         case 'd':
             dict_dir = optarg;
@@ -390,6 +412,10 @@ getOptions(int argc, char** argv) {
         case 'f':
             obj_file_dir = optarg;
             objfile_dir_set = true;
+            break;
+
+        case 'p':
+            piece_size = atol(optarg);
             break;
 
         case '?':
@@ -421,7 +447,8 @@ main(int argc, char** argv) {
         return 0;
     }
 
-    fprintf(stdout, "Test with iteration = %d, and", iteration);
+    fprintf(stdout, "Test with iteration = %d, piece size = %d, and",
+            iteration, piece_size);
     fprintf(stdout, "\n  dictionary dir = %s\n  object file dir = %s\n\n",
             dict_dir.c_str(), obj_file_dir.c_str());
 
