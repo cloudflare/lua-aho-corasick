@@ -191,32 +191,49 @@ Get_State_Addr(unsigned char* buf_base, AC_Ofst* StateOfstVect, uint32 state_id)
     return (AC_State*)(buf_base + StateOfstVect[state_id]);
 }
 
-#if BS_MULTI_VER
-// This function seems to be significantly faster than the variant in
-// !BS_MULTI_VER directive.
+// The performance of the binary search is critical to this work.
+//
+// Here we provide two versions of binary-search functions.
+// The non-pristine version seems to consistently out-perform "pristine" one on
+// bunch of benchmarks we tested.  With the benchmark under tests/testinput/
+//
+//   The speedup is following on my laptop (core i7, ubuntu):
+//
+//   benchmark       was                is
+//  ----------------------------------------
+//  image.bin       2.3s               2.0s
+//  test.tar        6.7s               5.7s
+//
+//  NOTE: As of I write this comment, we only measure the performance on about
+// 10+ benchmarks. It's still too early to say which one works better.
+//
+#if !defined(BS_MULTI_VER)
 static bool __attribute__((always_inline))
 Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input, int& idx) {
-    if (vect_len <= 4) {
-        for (int i = 0; i < vect_len; i++)
+    if (vect_len <= 8) {
+        for (int i = 0; i < vect_len; i++) {
             if (input_vect[i] == input) {
                 idx = i;
                 return true;
             }
+        }
         return false;
     }
 
+    // The "low" and "high" must be signed integers, as they could become -1.
+    // Also since they are signed integer, "(low + high)/2" is sightly more
+    // expensive than (low+high)>>1 or ((unsigned)(low + high))/2.
+    //
     int low = 0, high = vect_len - 1;
-    int input_s = (unsigned)input;
     while (low <= high) {
-        uint32 mid = (low + high)/2;
-        int mid_c = (unsigned)(input_vect[mid]);
+        int mid = (low + high) >> 1;
+        InputTy mid_c = input_vect[mid];
 
-        int diff = input_s - mid_c;
-        if (diff) {
-            int if_less = diff >> 8;
-            high -= (high - (mid - 1)) & if_less;
-            low += (mid + 1 - low) & ~if_less;
-        } else {
+        if (input < mid_c)
+            high = mid - 1;
+        else if (input > mid_c)
+            low = mid + 1;
+        else {
             idx = mid;
             return true;
         }
@@ -225,11 +242,13 @@ Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input, int& idx) 
 }
 
 #else
+
+/* Let us call this version "pristine" version. */
 static inline bool
 Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input, int& idx) {
     int low = 0, high = vect_len - 1;
     while (low <= high) {
-        uint32 mid = (low + high)/2;
+        int mid = (low + high) >> 1;
         InputTy mid_c = input_vect[mid];
 
         if (input < mid_c)
