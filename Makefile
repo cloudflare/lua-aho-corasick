@@ -24,7 +24,7 @@ LUA_TARGET_DIR := $(PREFIX)/share/lua/$(LUA_VERSION)
 # -DDEBUG : Turn on debugging support
 # -DUSE_SLOW_VER : Use the "slow" version of the Aho-Corasink implmentation.
 #
-CFLAGS = -msse2 -msse3 -msse4.1 -O3 -DBS_MULTI_VER
+CFLAGS = -msse2 -msse3 -msse4.1 -O3
 COMMON_FLAGS = -fvisibility=hidden -Wall $(CFLAGS)
 
 SO_CXXFLAGS = $(COMMON_FLAGS) -fPIC
