@@ -22,15 +22,23 @@ LUA_TARGET_DIR := $(PREFIX)/share/lua/$(LUA_VERSION)
 
 # Available directives:
 # -DDEBUG : Turn on debugging support
-# -DUSE_SLOW_VER : Use the "slow" version of the Aho-Corasink implmentation.
+# -DVERIFY : To verify if the slow-version and fast-version implementations
+#            get exactly the same result. Note -DVERIFY implies -DDEBUG.
 #
-CFLAGS = -msse2 -msse3 -msse4.1 -O3
-COMMON_FLAGS = -fvisibility=hidden -Wall $(CFLAGS)
+CFLAGS = -msse2 -msse3 -msse4.1 -O3 #-g -DVERIFY
+COMMON_FLAGS = -fvisibility=hidden -Wall $(CFLAGS) $(MY_CFLAGS) $(MY_CXXFLAGS)
 
 SO_CXXFLAGS = $(COMMON_FLAGS) -fPIC
 NON_SO_CXXFLAGS = $(COMMON_FLAGS)
 SO_LFLAGS = $(COMMON_FLAGS)
 NON_SO_FLAGS = $(COMMON_FLAGS)
+
+# -DVERIFY implies -DDEBUG
+ifneq ($(findstring -DVERIFY, $(COMMON_FLAGS)), )
+ifeq ($(findstring -DDEBUG, $(COMMON_FLAGS)), )
+    COMMON_FLAGS += -DDEBUG
+endif
+endif
 
 #############################################################################
 #
@@ -85,9 +93,9 @@ benchmark: $(C_SO_NAME)
 #
 clean :
 	-rm -f *.o *.d dep.txt $(TEST) $(C_SO_NAME) $(LUA_SO_NAME) $(TEST)
+	make clean -C tests
 
 install:
 	install -D -m 755 $(C_SO_NAME) $(DESTDIR)/$(SO_TARGET_DIR)/$(C_SO_NAME)
 	install -D -m 755 $(LUA_SO_NAME) $(DESTDIR)/$(SO_TARGET_DIR)/$(LUA_SO_NAME)
 	install -D -m 664 load_ac.lua $(DESTDIR)/$(LUA_TARGET_DIR)/load_ac.lua
-

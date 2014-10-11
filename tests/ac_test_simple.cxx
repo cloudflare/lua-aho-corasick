@@ -203,9 +203,9 @@ const char *dict8[] = {"aaab"};
 StrPair strpair8[] = {{"aaaaaaab", "aaab"}};
 Tests test8("test 8", dict8, 1, strpair8, 1);
 
-const char *dict9[] = {"z"};
+const char *dict9[] = {"haha", "z"};
 StrPair strpair9[] = {{"aaaaz", "z"}, {"z", "z"}};
-Tests test9("test 9", dict9, 1, strpair9, 2);
+Tests test9("test 9", dict9, 2, strpair9, 2);
 
 /* test the case when input string dosen't contain even a single char
  * of the pattern in dictionary.

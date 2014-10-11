@@ -21,8 +21,8 @@ class Match_Result {
 public:
     int begin;
     int end;
-
-    Match_Result(int b, int e): begin(b), end(e) {}
+    int pattern_idx;
+    Match_Result(int b, int e, int p): begin(b), end(e), pattern_idx(p) {}
 };
 
 typedef pair<InputTy, ACS_State *> GotoPair;
@@ -40,7 +40,8 @@ class ACS_State {
 friend class ACS_Constructor;
 
 public:
-    ACS_State(uint32 id): _id(id), _depth(0), _is_terminal(false), _fail_link(0) {}
+    ACS_State(uint32 id): _id(id), _pattern_idx(-1), _depth(0),
+                          _is_terminal(false), _fail_link(0){}
     ~ACS_State() {};
 
     void Set_Goto(InputTy c, ACS_State* s) { _goto_map[c] = s; }
@@ -66,9 +67,20 @@ public:
     uint32 Get_Depth() const { return _depth; }
     const ACS_Goto_Map& Get_Goto_Map(void) const { return _goto_map; }
     bool is_Terminal() const { return _is_terminal; }
+    int get_Pattern_Idx() const {
+        ASSERT(is_Terminal() && _pattern_idx >= 0);
+        return _pattern_idx;
+    }
+
+private:
+    void set_Pattern_Idx(int idx) {
+        ASSERT(is_Terminal());
+        _pattern_idx = idx;
+    }
 
 private:
     uint32 _id;
+    int _pattern_idx;
     short _depth;
     bool _is_terminal;
     ACS_Goto_Map _goto_map;
@@ -83,8 +95,14 @@ public:
     void Construct(const char** strv, unsigned int* strlenv,
                    unsigned int strnum);
 
-    Match_Result Match(const char*, uint32 len) const;
+    Match_Result Match(const char* s, uint32 len) const {
+        Match_Result r = MatchHelper(s, len);
+        Verify_Result(s, &r);
+        return r;
+    }
+
     Match_Result Match(const char* s) const { return Match(s, strlen(s)); }
+
 #ifdef DEBUG
     void dump_text(const char* = "ac.txt") const;
     void dump_dot(const char* = "ac.dot") const;
@@ -98,15 +116,43 @@ public:
     uint32 Get_State_Num() const { return _next_node_id - 1; }
 
 private:
-    void Add_String(const char* str, unsigned int str_len);
+    void Add_Pattern(const char* str, unsigned int str_len, int pattern_idx);
     ACS_State* new_state();
     void Propagate_faillink();
+
+    Match_Result MatchHelper(const char*, uint32 len) const;
+
+#ifdef VERIFY
+    void Verify_Result(const char* subject, const Match_Result* r) const;
+    void Save_Patterns(const char** strv, unsigned int* strlenv, int vect_len);
+    const char* get_ith_Pattern(unsigned i) const {
+        ASSERT(i < _pattern_vect.size());
+        return _pattern_vect.at(i);
+    }
+    unsigned get_ith_Pattern_Len(unsigned i) const {
+        ASSERT(i < _pattern_lens.size());
+        return _pattern_lens.at(i);
+    }
+#else
+    void Verify_Result(const char* subject, const Match_Result* r) const {
+        (void)subject; (void)r;
+    }
+    void Save_Patterns(const char** strv, unsigned int* strlenv, int vect_len) {
+        (void)strv; (void)strlenv;
+    }
+#endif
 
 private:
     ACS_State* _root;
     vector<ACS_State*> _all_states;
     unsigned char* _root_char;
     uint32 _next_node_id;
+
+#ifdef VERIFY
+    char* _pattern_buf;
+    vector<int> _pattern_lens;
+    vector<char*> _pattern_vect;
+#endif
 };
 
 #endif

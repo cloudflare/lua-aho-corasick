@@ -37,6 +37,9 @@ typedef uint32 State_ID;
 //
 typedef struct {
     buf_header_t hdr;         // The header exposed to the user using this lib.
+#ifdef VERIFY
+    ACS_Constructor* slow_impl;
+#endif
     uint32 buf_len;
     AC_Ofst root_goto_ofst;   // addr of root node's goto() function.
     AC_Ofst states_ofst_ofst; // addr of state pointer vector (indiced by id)

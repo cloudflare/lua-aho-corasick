@@ -10,11 +10,14 @@
 //
 //////////////////////////////////////////////////////////////////////////
 //
-
 ACS_Constructor::ACS_Constructor() : _next_node_id(1) {
     _root = new_state();
     _root_char = new InputTy[256];
     bzero((void*)_root_char, 256);
+
+#ifdef VERIFY
+    _pattern_buf = 0;
+#endif
 }
 
 ACS_Constructor::~ACS_Constructor() {
@@ -24,6 +27,10 @@ ACS_Constructor::~ACS_Constructor() {
     }
     _all_states.clear();
     delete[] _root_char;
+
+#ifdef VERIFY
+    delete[] _pattern_buf;
+#endif
 }
 
 ACS_State*
@@ -34,7 +41,8 @@ ACS_Constructor::new_state() {
 }
 
 void
-ACS_Constructor::Add_String(const char* str, unsigned int str_len) {
+ACS_Constructor::Add_Pattern(const char* str, unsigned int str_len,
+                             int pattern_idx) {
     ACS_State* state = _root;
     for (unsigned int i = 0; i < str_len; i++) {
         const char c = str[i];
@@ -47,6 +55,7 @@ ACS_Constructor::Add_String(const char* str, unsigned int str_len) {
         state = new_s;
     }
     state->_is_terminal = true;
+    state->set_Pattern_Idx(pattern_idx);
 }
 
 void
@@ -102,8 +111,10 @@ ACS_Constructor::Propagate_faillink() {
 void
 ACS_Constructor::Construct(const char** strv, unsigned int* strlenv,
                            uint32 strnum) {
+    Save_Patterns(strv, strlenv, strnum);
+
     for (uint32 i = 0; i < strnum; i++) {
-        Add_String(strv[i], strlenv[i]);
+        Add_Pattern(strv[i], strlenv[i], i);
     }
 
     Propagate_faillink();
@@ -117,7 +128,7 @@ ACS_Constructor::Construct(const char** strv, unsigned int* strlenv,
 }
 
 Match_Result
-ACS_Constructor::Match(const char *str, uint32 len)  const {
+ACS_Constructor::MatchHelper(const char *str, uint32 len) const {
     const ACS_State* root = _root;
     const ACS_State* state = root;
 
@@ -129,6 +140,14 @@ ACS_Constructor::Match(const char *str, uint32 len)  const {
             state = root->Get_Goto(c);
             break;
         }
+    }
+
+    if (unlikely(state->is_Terminal())) {
+        // This could happen if the one of the pattern has only one char!
+        uint32 pos = idx - 1;
+        Match_Result r(pos - state->Get_Depth() + 1, pos,
+                       state->get_Pattern_Idx());
+        return r;
     }
 
     while (idx < len) {
@@ -156,12 +175,13 @@ ACS_Constructor::Match(const char *str, uint32 len)  const {
 
         if (state->is_Terminal()) {
             uint32 pos = idx - 1;
-            Match_Result r = Match_Result(pos - state->Get_Depth() + 1, pos);
+            Match_Result r = Match_Result(pos - state->Get_Depth() + 1, pos,
+                                          state->get_Pattern_Idx());
             return r;
         }
     }
 
-    return Match_Result(-1, -1);
+    return Match_Result(-1, -1, -1);
 }
 
 #ifdef DEBUG
@@ -247,4 +267,52 @@ ACS_Constructor::dump_dot(const char *dotfile) const {
     fprintf(f, "}\n");
     fclose(f);
 }
+#endif
+
+#ifdef VERIFY
+void
+ACS_Constructor::Verify_Result(const char* subject, const Match_Result* r)
+    const {
+    if (r->begin >= 0) {
+        unsigned len = r->end - r->begin + 1;
+        int ptn_idx = r->pattern_idx;
+
+        ASSERT(ptn_idx >= 0 &&
+               len == get_ith_Pattern_Len(ptn_idx) &&
+               memcmp(subject + r->begin, get_ith_Pattern(ptn_idx), len) == 0);
+    }
+}
+
+void
+ACS_Constructor::Save_Patterns(const char** strv, unsigned int* strlenv,
+                               int pattern_num) {
+    // calculate the total size needed to save all patterns.
+    //
+    int buf_size = 0;
+    for (int i = 0; i < pattern_num; i++) { buf_size += strlenv[i]; }
+
+    // HINT: patterns are delimited by '\0' in order to ease debugging.
+    buf_size += pattern_num;
+    ASSERT(_pattern_buf == 0);
+    _pattern_buf = new char[buf_size + 1];
+    #define MAGIC_NUM 0x5a
+    _pattern_buf[buf_size] = MAGIC_NUM;
+
+    int ofst = 0;
+    _pattern_lens.resize(pattern_num);
+    _pattern_vect.resize(pattern_num);
+    for (int i = 0; i < pattern_num; i++) {
+        int l = strlenv[i];
+        _pattern_lens[i] = l;
+        _pattern_vect[i] = _pattern_buf + ofst;
+
+        memcpy(_pattern_buf + ofst, strv[i], l);
+        ofst += l;
+        _pattern_buf[ofst++] = '\0';
+    }
+
+    ASSERT(_pattern_buf[buf_size] == MAGIC_NUM);
+    #undef MAGIC_NUM
+}
+
 #endif
