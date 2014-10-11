@@ -29,7 +29,7 @@ local function mytest(testname, dict, match, notmatch)
             err_cnt = err_cnt + 1
             print "fail"
         end
-        print("gc is called")
+        --print("gc is called")
         collectgarbage()
     end
 

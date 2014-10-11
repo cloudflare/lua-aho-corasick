@@ -327,7 +327,7 @@ Benchmark::Run(int iteration) {
         _file_sz = filestat.st_size;
     }
 
-    void* ac = ac_create(_pat_set.getPatternVector(),
+    ac_t* ac = ac_create(_pat_set.getPatternVector(),
                          _pat_set.getPatternLenVector(),
                          _pat_set.getPatternNum());
     if (!ac) {

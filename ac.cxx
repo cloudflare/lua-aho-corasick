@@ -34,13 +34,13 @@ _match(buf_header_t* ac, const char* str, unsigned int len) {
 }
 
 extern "C" ac_result_t
-ac_match(void* ac, const char* str, unsigned int len) {
-    return _match((buf_header_t*)ac, str, len);
+ac_match(ac_t* ac, const char* str, unsigned int len) {
+    return _match((buf_header_t*)(void*)ac, str, len);
 }
 
 extern "C" int
 ac_match2(void* ac, const char* str, unsigned int len) {
-    ac_result_t r = _match((buf_header_t*)ac, str, len);
+    ac_result_t r = _match((buf_header_t*)(void*)ac, str, len);
     return r.match_begin;
 }
 
@@ -64,14 +64,14 @@ _match(buf_header_t* ac, const char* str, unsigned int len) {
 }
 
 extern "C" int
-ac_match2(void* ac, const char* str, unsigned int len) {
-    ac_result_t r = _match((buf_header_t*)ac, str, len);
+ac_match2(ac_t* ac, const char* str, unsigned int len) {
+    ac_result_t r = _match((buf_header_t*)(void*)ac, str, len);
     return r.match_begin;
 }
 
 extern "C" ac_result_t
-ac_match(void* ac, const char* str, unsigned int len) {
-    return _match((buf_header_t*)ac, str, len);
+ac_match(ac_t* ac, const char* str, unsigned int len) {
+    return _match((buf_header_t*)(void*)ac, str, len);
 }
 
 class BufAlloc : public Buf_Allocator {
@@ -90,7 +90,7 @@ public:
     }
 };
 
-extern "C" void*
+extern "C" ac_t*
 ac_create(const char** strv, unsigned int* strlenv, unsigned int v_len) {
     ACS_Constructor acc;
     acc.Construct(strv, strlenv, v_len);
@@ -98,7 +98,7 @@ ac_create(const char** strv, unsigned int* strlenv, unsigned int v_len) {
     BufAlloc ba;
     AC_Converter cvt(acc, ba);
     AC_Buffer* buf = cvt.Convert();
-    return (buf_header_t*)(void*)buf;
+    return (ac_t*)(void*)buf;
 }
 
 extern "C" void

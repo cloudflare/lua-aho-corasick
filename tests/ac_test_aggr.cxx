@@ -66,7 +66,7 @@ ACBigFileTester::Run_Helper(buf_header_t* PM) {
     for (int ofst = 0, chunk_idx = 0, chunk_num = _chunk_num;
          chunk_idx < chunk_num; ofst += chunk_sz, chunk_idx++) {
         const char* substring = _msg + ofst;
-        ac_result_t r = ac_match(PM, substring , len - ofst);
+        ac_result_t r = ac_match((ac_t*)(void*)PM, substring , len - ofst);
         int m_b = r.match_begin;
         int m_e = r.match_end;
 

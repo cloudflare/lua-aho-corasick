@@ -67,6 +67,9 @@ local function mytest(testname, dict, match, notmatch)
     collectgarbage()
 end
 
+print("")
+print("====== Test to see if load_ac.lua works properly ========")
+
 mytest("test1",
     {"he", "she", "his", "her", "str\0ing"},
     -- matching cases

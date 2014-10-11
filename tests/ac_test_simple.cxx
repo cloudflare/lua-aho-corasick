@@ -92,7 +92,7 @@ ACTestSimple::Run() {
         fputs("]\n", stdout);
 
         /* Create the dictionary */
-        void* ac = ac_create(t.dict, strlen_v, dict_len);
+        ac_t* ac = ac_create(t.dict, strlen_v, dict_len);
         delete[] strlen_v;
 
         for (int ii = 0, ee = t.strpair_num; ii < ee; ii++, total++) {
