@@ -65,8 +65,9 @@ typedef struct {
     State_ID first_kid;
     AC_Ofst fail_link;
     short depth;             // How far away from root.
+    unsigned short is_term;  // Is terminal node. if is_term != 0, it encodes
+                             // the value of "1 + pattern-index".
     unsigned char goto_num;  // The number of valid transition.
-    unsigned char is_term;   // Is terminal node.
     InputTy input_vect[1];   // Vector of valid input. Must be last field!
 } AC_State;
 

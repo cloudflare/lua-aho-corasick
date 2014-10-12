@@ -13,11 +13,16 @@ _match(buf_header_t* ac, const char* str, unsigned int len) {
 
     #ifdef VERIFY
     {
-       Match_Result r2 = buf->slow_impl->Match(str, len);
-       ASSERT(r.match_begin == r2.begin || r.match_end == r2.end);
+        Match_Result r2 = buf->slow_impl->Match(str, len);
+        if (r.match_begin != r2.begin) {
+            ASSERT(0);
+        } else {
+            ASSERT((r.match_begin < 0) ||
+                   (r.match_end == r2.end &&
+                    r.pattern_idx == r2.pattern_idx));
+        }
     }
     #endif
-
     return r;
 }
 
@@ -50,6 +55,13 @@ public:
 
 extern "C" ac_t*
 ac_create(const char** strv, unsigned int* strlenv, unsigned int v_len) {
+    if (v_len >= 65535) {
+        // TODO: Crrently we use 16-bit to encode pattern-index (see the
+        //  comment to AC_State::is_term), therefore we are not able to
+        //  handle pattern set with more than 65535 entries.
+        return 0;
+    }
+
     ACS_Constructor *acc;
 #ifdef VERIFY
     acc = new ACS_Constructor;

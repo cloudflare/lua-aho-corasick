@@ -143,7 +143,8 @@ AC_Converter::Convert() {
 
         new_s->first_kid = wl.size() + 1;
         new_s->depth = old_s->Get_Depth();
-        new_s->is_term = old_s->is_Terminal() ? 1 : 0;
+        new_s->is_term = old_s->is_Terminal() ?
+                         old_s->get_Pattern_Idx() + 1 : 0;
 
         uint32 gotonum = old_s->Get_GotoNum();
         new_s->goto_num = gotonum;
@@ -293,6 +294,7 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
             ac_result_t r;
             r.match_begin = idx - state->depth;
             r.match_end = idx - 1;
+            r.pattern_idx = state->is_term - 1;
             return r;
         }
     }
@@ -334,6 +336,7 @@ Match(AC_Buffer* buf, const char* str, uint32 len) {
             ac_result_t r;
             r.match_begin = idx - state->depth;
             r.match_end = idx - 1;
+            r.pattern_idx = state->is_term - 1;
             return r;
         }
     }
