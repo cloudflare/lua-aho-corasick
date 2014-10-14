@@ -6,13 +6,13 @@
 #
 C_SO_NAME = libac.so
 LUA_SO_NAME = ahocorasick.so
+AR_NAME = libac.a
 
 #############################################################################
 #
 #           Compile and link flags
 #
 #############################################################################
-
 PREFIX = /usr/local
 LUA_VERSION := 5.1
 PREFIX = /usr/local
@@ -29,9 +29,8 @@ CFLAGS = -msse2 -msse3 -msse4.1 -O3 #-g -DVERIFY
 COMMON_FLAGS = -fvisibility=hidden -Wall $(CFLAGS) $(MY_CFLAGS) $(MY_CXXFLAGS)
 
 SO_CXXFLAGS = $(COMMON_FLAGS) -fPIC
-NON_SO_CXXFLAGS = $(COMMON_FLAGS)
 SO_LFLAGS = $(COMMON_FLAGS)
-NON_SO_FLAGS = $(COMMON_FLAGS)
+AR_CXXFLAGS = $(COMMON_FLAGS)
 
 # -DVERIFY implies -DDEBUG
 ifneq ($(findstring -DVERIFY, $(COMMON_FLAGS)), )
@@ -40,43 +39,63 @@ ifeq ($(findstring -DDEBUG, $(COMMON_FLAGS)), )
 endif
 endif
 
+AR = ar
+AR_FLAGS = cru
+
 #############################################################################
 #
-#           Make rules
+#       Divide source codes and objects into several categories
 #
 #############################################################################
 #
-.PHONY = all clean test benchmark
-all : $(C_SO_NAME) $(LUA_SO_NAME)
-	-cat *.d > dep.txt
+SRC_COMMON := ac_fast.cxx ac_slow.cxx
+LIBAC_SO_SRC := $(SRC_COMMON) ac.cxx    # source for libac.so
+LUA_SO_SRC := $(SRC_COMMON) ac_lua.cxx  # source for ahocorasick.so
+LIBAC_A_SRC := $(LIBAC_SO_SRC)          # source for libac.a
 
--include dep.txt
+#############################################################################
+#
+#                   Make rules
+#
+#############################################################################
+#
+.PHONY = all clean test benchmark prepare
+all : $(C_SO_NAME) $(LUA_SO_NAME) $(AR_NAME)
 
-COMMON_CXX_SRC = ac_fast.cxx ac_slow.cxx
-C_SO_CXX_SRC = ac.cxx
-LUA_SO_CXX_SRC = ac_lua.cxx
+-include c_so_dep.txt
+-include lua_so_dep.txt
+-include ar_dep.txt
 
-COMMON_OBJ = ${COMMON_CXX_SRC:.cxx=.o}
-C_SO_OBJ = ${C_SO_CXX_SRC:.cxx=.o}
-LUA_SO_OBJ = ${LUA_SO_CXX_SRC:.cxx=.o}
+BUILD_SO_DIR := build_so
+BUILD_AR_DIR := build_ar
 
-# Static-Pattern-Rules for the objects comprising the shared objects.
-$(COMMON_OBJ) $(C_SO_OBJ) : %.o : %.cxx
-	$(CXX) $< -c $(SO_CXXFLAGS) -MMD
+$(BUILD_SO_DIR) :; mkdir $@
+$(BUILD_AR_DIR) :; mkdir $@
 
-# Static-Pattern-Rules for aho-corasick.so's interface object files, which
-# need to call LUA C-API.
-$(LUA_SO_OBJ) : %.o : %.cxx
-	$(CXX) $< -c $(SO_CXXFLAGS) -I$(LUA_INCLUDE_DIR) -MMD
+$(BUILD_SO_DIR)/%.o : %.cxx | $(BUILD_SO_DIR)
+	$(CXX) $< -c $(SO_CXXFLAGS) -I$(LUA_INCLUDE_DIR) -MMD -o $@
 
-# Build libac.so
-$(C_SO_NAME) : $(COMMON_OBJ) $(C_SO_OBJ)
+$(BUILD_AR_DIR)/%.o : %.cxx | $(BUILD_AR_DIR)
+	$(CXX) $< -c $(AR_CXXFLAGS) -I$(LUA_INCLUDE_DIR) -MMD -o $@
+
+$(C_SO_NAME) : $(addprefix $(BUILD_SO_DIR)/, ${LIBAC_SO_SRC:.cxx=.o})
 	$(CXX) $+ -shared -Wl,-soname=$(C_SO_NAME) $(SO_LFLAGS) -o $@
+	cat $(addprefix $(BUILD_SO_DIR)/, ${LIBAC_SO_SRC:.cxx=.d}) > c_so_dep.txt
 
-# Build aho-corasick.so
-$(LUA_SO_NAME) : $(COMMON_OBJ) $(LUA_SO_OBJ)
+$(LUA_SO_NAME) : $(addprefix $(BUILD_SO_DIR)/, ${LUA_SO_SRC:.cxx=.o})
 	$(CXX) $+ -shared -Wl,-soname=$(LUA_SO_NAME) $(SO_LFLAGS) -o $@
+	cat $(addprefix $(BUILD_SO_DIR)/, ${LUA_SO_SRC:.cxx=.d}) > lua_so_dep.txt
 
+$(AR_NAME) : $(addprefix $(BUILD_AR_DIR)/, ${LIBAC_A_SRC:.cxx=.o})
+	$(AR) $(AR_FLAGS) $@ $+
+	cat $(addprefix $(BUILD_AR_DIR)/, ${LIBAC_A_SRC:.cxx=.d}) > lua_so_dep.txt
+
+#############################################################################
+#
+#           Misc
+#
+#############################################################################
+#
 test : $(C_SO_NAME)
 	$(MAKE) -C tests && \
 	luajit tests/lua_test.lua && \
@@ -85,14 +104,9 @@ test : $(C_SO_NAME)
 benchmark: $(C_SO_NAME)
 	$(MAKE) benchmark -C tests
 
-#############################################################################
-#
-#           Misc
-#
-#############################################################################
-#
 clean :
-	-rm -f *.o *.d dep.txt $(TEST) $(C_SO_NAME) $(LUA_SO_NAME) $(TEST)
+	-rm -rf *.o *.d c_so_dep.txt lua_so_dep.txt ar_dep.txt $(TEST) \
+        $(C_SO_NAME) $(LUA_SO_NAME) $(TEST) $(BUILD_SO_DIR) $(BUILD_AR_DIR)
 	make clean -C tests
 
 install:
