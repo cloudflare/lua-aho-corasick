@@ -15,19 +15,26 @@ typedef struct {
     const char* match;
 } StrPair;
 
+typedef enum {
+    MV_FIRST_MATCH = 0,
+    MV_LEFT_LONGEST = 1,
+} MatchVariant;
+
 typedef struct {
     const char* name;
     const char** dict;
     StrPair* strpairs;
     int dict_len;
     int strpair_num;
+    MatchVariant match_variant;
 } TestingCase;
 
 class Tests {
 public:
     Tests(const char* name,
           const char* dict[], int dict_len,
-          StrPair strpairs[], int strpair_num) {
+          StrPair strpairs[], int strpair_num,
+          MatchVariant mv = MV_FIRST_MATCH) {
         if (!_tests)
             _tests = new vector<TestingCase>;
 
@@ -37,6 +44,7 @@ public:
         tc.strpairs = strpairs;
         tc.dict_len = dict_len;
         tc.strpair_num = strpair_num;
+        tc.match_variant = mv;
         _tests->push_back(tc);
     }
 
@@ -45,6 +53,14 @@ public:
 
 private:
     static vector<TestingCase> *_tests;
+};
+
+class LeftLongestTests : public Tests {
+public:
+    LeftLongestTests (const char* name, const char* dict[], int dict_len,
+                      StrPair strpairs[], int strpair_num):
+        Tests(name, dict, dict_len, strpairs, strpair_num, MV_LEFT_LONGEST) {
+    }
 };
 
 vector<TestingCase>* Tests::_tests = 0;
@@ -103,7 +119,15 @@ ACTestSimple::Run() {
             fprintf(stdout, "[%3d] Testing '%s' : ", total, str);
 
             int len = strlen(str);
-            ac_result_t r = ac_match(ac, str, len);
+            ac_result_t r;
+            if (t.match_variant == MV_FIRST_MATCH)
+                r = ac_match(ac, str, len);
+            else if (t.match_variant == MV_LEFT_LONGEST)
+                r = ac_match_longest_l(ac, str, len);
+            else {
+                ASSERT(false && "Unknown variant");
+            }
+
             int m_b = r.match_begin;
             int m_e = r.match_end;
 
@@ -157,6 +181,13 @@ Run_AC_Simple_Test() {
     t.PrintBanner();
     return t.Run();
 }
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//    Testing cases for first-match variant (i.e. test ac_match())
+//
+//////////////////////////////////////////////////////////////////////////////
+//
 
 /* test 1*/
 const char *dict1[] = {"he", "she", "his", "her"};
@@ -213,3 +244,22 @@ Tests test9("test 9", dict9, 2, strpair9, 2);
 const char *dict10[] = {"abc"};
 StrPair strpair10[] = {{"cde", 0}};
 Tests test10("test 10", dict10, 1, strpair10, 1);
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//    Testing cases for first longest match variant (i.e.
+// test ac_match_longest_l())
+//
+//////////////////////////////////////////////////////////////////////////////
+//
+
+// This was actually first motivation for left-longest-match
+const char *dict100[] = {"Mozilla", "Mozilla Mobile"};
+StrPair strpair100[] = {{"User Agent containing string Mozilla Mobile", "Mozilla Mobile"}};
+LeftLongestTests test100("l_test 100", dict100, 2, strpair100, 1);
+
+// Dict with single char is tricky
+const char *dict101[] = {"a", "abc"};
+StrPair strpair101[] = {{"abcdef", "abc"}};
+LeftLongestTests test101("l_test 101", dict101, 2, strpair101, 1);

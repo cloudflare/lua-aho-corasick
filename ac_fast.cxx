@@ -375,6 +375,20 @@ Match_Tmpl(AC_Buffer* buf, const char* str, uint32 len) {
                 r.pattern_idx = state->is_term - 1;
                 return r;
             }
+
+            if (variant == MV_LEFT_LONGEST) {
+                int match_begin = idx - state->depth;
+                int match_end = idx - 1;
+
+                if (r.match_begin == -1 ||
+                    match_end - match_begin > r.match_end - r.match_begin) {
+                    r.match_begin = match_begin;
+                    r.match_end = match_end;
+                    r.pattern_idx = state->is_term - 1;
+                }
+                continue;
+            }
+
             ASSERT(false && "NYI");
         }
     }
@@ -385,6 +399,11 @@ Match_Tmpl(AC_Buffer* buf, const char* str, uint32 len) {
 ac_result_t
 Match(AC_Buffer* buf, const char* str, uint32 len) {
     return Match_Tmpl<MV_FIRST_MATCH>(buf, str, len);
+}
+
+ac_result_t
+Match_Longest_L(AC_Buffer* buf, const char* str, uint32 len) {
+    return Match_Tmpl<MV_LEFT_LONGEST>(buf, str, len);
 }
 
 #ifdef DEBUG

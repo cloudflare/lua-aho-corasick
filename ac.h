@@ -32,6 +32,8 @@ ac_t* ac_create(const char** pattern_v, unsigned int* pattern_len_v,
 
 ac_result_t ac_match(ac_t*, const char *str, unsigned int len) AC_EXPORT;
 
+ac_result_t ac_match_longest_l(ac_t*, const char *str, unsigned int len) AC_EXPORT;
+
 /* Similar to ac_match() except that it only returns match-begin. The rationale
  * for this interface is that luajit has hard time in dealing with strcture-
  * return-value.

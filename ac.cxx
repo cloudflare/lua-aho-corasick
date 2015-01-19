@@ -37,6 +37,15 @@ ac_match(ac_t* ac, const char* str, unsigned int len) {
     return _match((buf_header_t*)(void*)ac, str, len);
 }
 
+extern "C" ac_result_t
+ac_match_longest_l(ac_t* ac, const char* str, unsigned int len) {
+    AC_Buffer* buf = (AC_Buffer*)(void*)ac;
+    ASSERT(((buf_header_t*)ac)->magic_num == AC_MAGIC_NUM);
+
+    ac_result_t r = Match_Longest_L(buf, str, len);
+    return r;
+}
+
 class BufAlloc : public Buf_Allocator {
 public:
     virtual AC_Buffer* alloc(int sz) {
