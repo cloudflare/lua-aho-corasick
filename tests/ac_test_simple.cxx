@@ -263,3 +263,13 @@ LeftLongestTests test100("l_test 100", dict100, 2, strpair100, 1);
 const char *dict101[] = {"a", "abc"};
 StrPair strpair101[] = {{"abcdef", "abc"}};
 LeftLongestTests test101("l_test 101", dict101, 2, strpair101, 1);
+
+// Testing case with partially overlapping patterns. The purpose is to
+// check if the fail-link leading from terminal state is correct.
+//
+// The fail-link leading from terminal-state does not matter in
+// match-first-occurrence variant, as it stop when a terminal is hit.
+//
+const char *dict102[] = {"abc", "bcdef"};
+StrPair strpair102[] = {{"abcdef", "bcdef"}};
+LeftLongestTests test102("l_test 102", dict102, 2, strpair102, 1);
