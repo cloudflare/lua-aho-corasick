@@ -25,7 +25,7 @@ OBJ = ${SRC:.cxx=.o}
 -include bench_dep.txt
 
 $(PROGRAM) $(BENCHMARK) : testinput/text.tar testinput/image.bin
-$(PROGRAM) : $(OBJ) ../libac.so
+$(PROGRAM) : $(OBJ) ../libac.$(SO_EXT)
 	$(CXX) $(OBJ) -L.. -lac -o $@
 	-cat *.d > test_dep.txt
 
