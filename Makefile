@@ -1,11 +1,19 @@
+OS := $(shell uname)
+
+ifeq ($(OS), Darwin)
+    SO_EXT := dylib
+else
+    SO_EXT := so
+endif
+
 #############################################################################
 #
 #           Binaries we are going to build
 #
 #############################################################################
 #
-C_SO_NAME = libac.so
-LUA_SO_NAME = ahocorasick.so
+C_SO_NAME = libac.$(SO_EXT)
+LUA_SO_NAME = ahocorasick.$(SO_EXT)
 AR_NAME = libac.a
 
 #############################################################################
@@ -78,6 +86,7 @@ $(BUILD_SO_DIR)/%.o : %.cxx | $(BUILD_SO_DIR)
 $(BUILD_AR_DIR)/%.o : %.cxx | $(BUILD_AR_DIR)
 	$(CXX) $< -c $(AR_CXXFLAGS) -I$(LUA_INCLUDE_DIR) -MMD -o $@
 
+ifneq ($(OS), Darwin)
 $(C_SO_NAME) : $(addprefix $(BUILD_SO_DIR)/, ${LIBAC_SO_SRC:.cxx=.o})
 	$(CXX) $+ -shared -Wl,-soname=$(C_SO_NAME) $(SO_LFLAGS) -o $@
 	cat $(addprefix $(BUILD_SO_DIR)/, ${LIBAC_SO_SRC:.cxx=.d}) > c_so_dep.txt
@@ -85,6 +94,16 @@ $(C_SO_NAME) : $(addprefix $(BUILD_SO_DIR)/, ${LIBAC_SO_SRC:.cxx=.o})
 $(LUA_SO_NAME) : $(addprefix $(BUILD_SO_DIR)/, ${LUA_SO_SRC:.cxx=.o})
 	$(CXX) $+ -shared -Wl,-soname=$(LUA_SO_NAME) $(SO_LFLAGS) -o $@
 	cat $(addprefix $(BUILD_SO_DIR)/, ${LUA_SO_SRC:.cxx=.d}) > lua_so_dep.txt
+
+else
+$(C_SO_NAME) : $(addprefix $(BUILD_SO_DIR)/, ${LIBAC_SO_SRC:.cxx=.o})
+	$(CXX) $+ -shared $(SO_LFLAGS) -o $@
+	cat $(addprefix $(BUILD_SO_DIR)/, ${LIBAC_SO_SRC:.cxx=.d}) > c_so_dep.txt
+
+$(LUA_SO_NAME) : $(addprefix $(BUILD_SO_DIR)/, ${LUA_SO_SRC:.cxx=.o})
+	$(CXX) $+ -shared $(SO_LFLAGS) -o $@ -Wl,-undefined,dynamic_lookup
+	cat $(addprefix $(BUILD_SO_DIR)/, ${LUA_SO_SRC:.cxx=.d}) > lua_so_dep.txt
+endif
 
 $(AR_NAME) : $(addprefix $(BUILD_AR_DIR)/, ${LIBAC_A_SRC:.cxx=.o})
 	$(AR) $(AR_FLAGS) $@ $+

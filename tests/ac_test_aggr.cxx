@@ -21,8 +21,8 @@ public:
     ACBigFileTester(const char* filepath) : BigFileTester(filepath){};
 
 private:
-    virtual buf_header_t* PM_Create(const char** strv, uint* strlenv,
-                                    uint vect_len) {
+    virtual buf_header_t* PM_Create(const char** strv, uint32* strlenv,
+                                    uint32 vect_len) {
         return (buf_header_t*)ac_create(strv, strlenv, vect_len);
     }
 

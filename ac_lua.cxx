@@ -158,10 +158,6 @@ static const struct luaL_Reg lib_funcs[] = {
     {0, 0}
 };
 
-static const struct luaL_Reg lib_mt[] = {
-    {0, 0}
-};
-
 extern "C" int AC_EXPORT
 luaopen_ahocorasick(lua_State* L) {
     luaL_newmetatable(L, tname);

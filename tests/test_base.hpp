@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <stdint.h>
 
 using namespace std;
 class ACTestBase {
@@ -26,8 +27,8 @@ public:
     bool Run();
 
 protected:
-    virtual buf_header_t* PM_Create(const char** strv, uint* strlenv,
-                                    uint vect_len) = 0;
+    virtual buf_header_t* PM_Create(const char** strv, uint32_t* strlenv,
+                                    uint32_t vect_len) = 0;
     virtual void PM_Free(buf_header_t*) = 0;
     virtual bool Run_Helper(buf_header_t* PM) = 0;
 

@@ -1,0 +1,6 @@
+*.d
+*.o
+*.a
+*.so
+*_dep.txt
+tests/testinput

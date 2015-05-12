@@ -1,3 +1,10 @@
+OS := $(shell uname)
+ifeq ($(OS), Darwin)
+    SO_EXT := dylib
+else
+    SO_EXT := so
+endif
+
 .PHONY = all clean test runtest benchmark
 
 PROGRAM = ac_test
@@ -22,15 +29,25 @@ $(PROGRAM) : $(OBJ) ../libac.so
 	$(CXX) $(OBJ) -L.. -lac -o $@
 	-cat *.d > test_dep.txt
 
-$(BENCHMARK) : ac_bench.o ../libac.so
+$(BENCHMARK) : ac_bench.o ../libac.$(SO_EXT)
 	$(CXX) ac_bench.o -L.. -lac -o $@
 	-cat *.d > bench_dep.txt
 
+ifneq ($(OS), Darwin)
 runtest:$(PROGRAM)
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):.. ./$(PROGRAM) testinput/*
 
 benchmark:$(BENCHMARK)
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):.. ./ac_bench
+
+else
+runtest:$(PROGRAM)
+	DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):.. ./$(PROGRAM) testinput/*
+
+benchmark:$(BENCHMARK)
+	DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):.. ./ac_bench
+
+endif
 
 testinput/text.tar:
 	echo "download testing files (gcc tarball)..."
