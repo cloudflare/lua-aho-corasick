@@ -199,7 +199,7 @@ getFilesUnderDir(vector<string>& files, const char* path) {
 class Timer {
 public:
     Timer() {
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &_start);
+        my_clock_gettime(&_start);
         _stop = _start;
         _acc.tv_sec = 0;
         _acc.tv_nsec = 0;
@@ -223,16 +223,28 @@ public:
 	}
 
     void Start(bool acc=true) {
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &_start);
+        my_clock_gettime(&_start);
     }
 
     void Stop() {
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &_stop);
+        my_clock_gettime(&_stop);
         struct timespec t = CalcDuration();
         _acc = add_duration(_acc, t);
     }
 
 private:
+    int my_clock_gettime(struct timespec* t) {
+#ifdef __linux
+        return clock_gettime(CLOCK_PROCESS_CPUTIME_ID, t);
+#else
+        struct timeval tv;
+        int rc = gettimeofday(&tv, 0);
+        t->tv_sec = tv.tv_sec;
+        t->tv_nsec = tv.tv_usec * 1000;
+        return rc;
+#endif
+    }
+
     struct timespec add_duration(const struct timespec& dur1,
                                  const struct timespec& dur2) {
         time_t sec = dur1.tv_sec + dur2.tv_sec;
@@ -446,6 +458,11 @@ main(int argc, char** argv) {
         PrintHelp(argv[0]);
         return 0;
     }
+
+#ifdef __linux
+    fprintf(stdout, "\n!!!WARNING: On this OS, the execution time is measured"
+            " by gettimeofday(2) which is imprecise!!!\n\n");
+#endif
 
     fprintf(stdout, "Test with iteration = %d, piece size = %d, and",
             iteration, piece_size);
