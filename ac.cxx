@@ -65,7 +65,7 @@ public:
 extern "C" ac_t*
 ac_create(const char** strv, unsigned int* strlenv, unsigned int v_len) {
     if (v_len >= 65535) {
-        // TODO: Crrently we use 16-bit to encode pattern-index (see the
+        // TODO: Currently we use 16-bit to encode pattern-index (see the
         //  comment to AC_State::is_term), therefore we are not able to
         //  handle pattern set with more than 65535 entries.
         return 0;
