@@ -459,7 +459,7 @@ main(int argc, char** argv) {
         return 0;
     }
 
-#ifdef __linux
+#ifndef __linux
     fprintf(stdout, "\n!!!WARNING: On this OS, the execution time is measured"
             " by gettimeofday(2) which is imprecise!!!\n\n");
 #endif
