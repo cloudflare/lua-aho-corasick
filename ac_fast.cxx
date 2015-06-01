@@ -167,6 +167,9 @@ AC_Converter::Convert() {
         ofst += Calc_State_Sz(old_s);
     }
 
+    // This assertion might be useful to catch buffer overflow
+    ASSERT(ofst == buf->buf_len);
+
     // Populate the fail-link field.
     for (vector<const ACS_State*>::iterator i = wl.begin(), e = wl.end();
             i != e; i++) {
