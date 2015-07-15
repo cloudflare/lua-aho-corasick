@@ -125,7 +125,8 @@ benchmark: $(C_SO_NAME)
 
 clean :
 	-rm -rf *.o *.d c_so_dep.txt lua_so_dep.txt ar_dep.txt $(TEST) \
-        $(C_SO_NAME) $(LUA_SO_NAME) $(TEST) $(BUILD_SO_DIR) $(BUILD_AR_DIR)
+        $(C_SO_NAME) $(LUA_SO_NAME) $(TEST) $(BUILD_SO_DIR) $(BUILD_AR_DIR) \
+        $(AR_NAME)
 	make clean -C tests
 
 install:
