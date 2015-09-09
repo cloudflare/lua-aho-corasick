@@ -212,7 +212,7 @@ Get_State_Addr(unsigned char* buf_base, AC_Ofst* StateOfstVect, uint32 state_id)
 // 10+ benchmarks. It's still too early to say which one works better.
 //
 #if !defined(BS_MULTI_VER)
-static bool __attribute__((always_inline))
+static bool __attribute__((always_inline)) inline
 Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input, int& idx) {
     if (vect_len <= 8) {
         for (int i = 0; i < vect_len; i++) {
