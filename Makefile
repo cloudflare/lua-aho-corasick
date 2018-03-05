@@ -36,6 +36,8 @@ LUA_TARGET_DIR := $(PREFIX)/share/lua/$(LUA_VERSION)
 CFLAGS = -O3 #-g -DVERIFY
 ifeq ($(ARCH),x86_64)
     CFLAGS += -msse2 -msse3 -msse4.1
+else ifeq ($(ARCH),aarch64)
+    CFLAGS += -march=armv8-a+crc
 endif
 COMMON_FLAGS = -fvisibility=hidden -Wall $(CFLAGS) $(MY_CFLAGS) $(MY_CXXFLAGS) $(CPPFLAGS)
 
