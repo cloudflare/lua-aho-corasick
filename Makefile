@@ -21,9 +21,8 @@ AR_NAME = libac.a
 #           Compile and link flags
 #
 #############################################################################
-PREFIX = /usr/local
+PREFIX ?= /usr/local
 LUA_VERSION := 5.1
-PREFIX = /usr/local
 LUA_INCLUDE_DIR := $(PREFIX)/include/lua$(LUA_VERSION)
 SO_TARGET_DIR := $(PREFIX)/lib/lua/$(LUA_VERSION)
 LUA_TARGET_DIR := $(PREFIX)/share/lua/$(LUA_VERSION)
@@ -34,10 +33,10 @@ LUA_TARGET_DIR := $(PREFIX)/share/lua/$(LUA_VERSION)
 #            get exactly the same result. Note -DVERIFY implies -DDEBUG.
 #
 CFLAGS = -msse2 -msse3 -msse4.1 -O3 #-g -DVERIFY
-COMMON_FLAGS = -fvisibility=hidden -Wall $(CFLAGS) $(MY_CFLAGS) $(MY_CXXFLAGS)
+COMMON_FLAGS = -fvisibility=hidden -Wall $(CFLAGS) $(MY_CFLAGS) $(MY_CXXFLAGS) $(CPPFLAGS)
 
 SO_CXXFLAGS = $(COMMON_FLAGS) -fPIC
-SO_LFLAGS = $(COMMON_FLAGS)
+SO_LFLAGS = $(COMMON_FLAGS) $(LDFLAGS)
 AR_CXXFLAGS = $(COMMON_FLAGS)
 
 # -DVERIFY implies -DDEBUG
