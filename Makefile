@@ -32,7 +32,7 @@ LUA_TARGET_DIR := $(PREFIX)/share/lua/$(LUA_VERSION)
 # -DVERIFY : To verify if the slow-version and fast-version implementations
 #            get exactly the same result. Note -DVERIFY implies -DDEBUG.
 #
-COMMON_FLAGS = -msse2 -msse3 -msse4.1 -O3 #-g -DVERIFY
+COMMON_FLAGS = -O3 #-g -DVERIFY -msse2 -msse3 -msse4.1
 COMMON_FLAGS += -fvisibility=hidden -Wall $(CXXFLAGS) $(MY_CXXFLAGS) $(CPPFLAGS)
 
 SO_CXXFLAGS = $(COMMON_FLAGS) -fPIC
