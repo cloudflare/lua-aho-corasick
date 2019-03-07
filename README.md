@@ -10,7 +10,7 @@ satisfactory. So we switch to C/C++ implementation.
 There are two shared objects provied by this package: libac.so and ahocorasick.so
 The former is a regular shared object which can be directly used by C/C++
 application, or by Lua via FFI; and the later is a Lua module. An example usage
-is shown bellow:
+is shown below:
 
 ```lua
 local ac = require "ahocorasick"
@@ -37,4 +37,4 @@ string foo(input-string, dictionary) {
 ```
 
 It's pretty easy to get rid of this limitation, just to associate each state with
-a spare bit-vector dipicting the set of strings recognized by that state.
+a spare bit-vector depicting the set of strings recognized by that state.

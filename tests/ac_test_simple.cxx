@@ -238,7 +238,7 @@ const char *dict9[] = {"haha", "z"};
 StrPair strpair9[] = {{"aaaaz", "z"}, {"z", "z"}};
 Tests test9("test 9", dict9, 2, strpair9, 2);
 
-/* test the case when input string dosen't contain even a single char
+/* test the case when input string doesn't contain even a single char
  * of the pattern in dictionary.
  */
 const char *dict10[] = {"abc"};

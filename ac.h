@@ -6,12 +6,12 @@ extern "C" {
 
 #define AC_EXPORT __attribute__ ((visibility ("default")))
 
-/* If the subject-string dosen't match any of the given patterns, "match_begin"
+/* If the subject-string doesn't match any of the given patterns, "match_begin"
  * should be a negative; otherwise the substring of the subject-string,
  * starting from offset "match_begin" to "match_end" incusively,
  * should exactly match the pattern specified by the 'pattern_idx' (i.e.
  * the pattern is "pattern_v[pattern_idx]" where the "pattern_v" is the
- * first acutal argument passing to ac_create())
+ * first actual argument passing to ac_create())
  */
 typedef struct {
     int match_begin;

@@ -41,7 +41,7 @@ _create_helper(lua_State* L, const vector<const char*>& str_v,
     ACS_Constructor acc;
     BufAlloc ba(L);
 
-    // Step 1: construt the slow version.
+    // Step 1: construct the slow version.
     unsigned int strnum = str_v.size();
     const char** str_vect = new const char*[strnum];
     unsigned int* strlen_vect = new unsigned int[strnum];
@@ -76,7 +76,7 @@ _match_helper(buf_header_t* ac, const char *str, unsigned int len) {
     return r;
 }
 
-// LUA sematic:
+// LUA semantic:
 //  input: array of strings
 //  output: userdata containing the AC-graph (i.e. the AC_Buffer).
 //

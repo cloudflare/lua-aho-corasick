@@ -31,7 +31,7 @@ typedef uint32 State_ID;
 //      at all. On the other hand, 8-bit is insufficient to encode kids' ID.
 //
 //   3. An array indiced by state's id, and the element is the offset
-//      of correspoding state wrt the base address of the buffer.
+//      of corresponding state wrt the base address of the buffer.
 //
 //   4. the contents of states.
 //

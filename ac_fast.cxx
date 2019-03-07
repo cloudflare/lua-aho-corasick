@@ -133,7 +133,7 @@ AC_Converter::Convert() {
 
         // This property should hold as we:
         //  - States are appended to worklist in the BFS order.
-        //  - sibiling states are appended to worklist in the order of their
+        //  - sibling states are appended to worklist in the order of their
         //    corresponding input.
         //
         State_ID state_id = idx + 1;
@@ -225,7 +225,7 @@ Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input, int& idx) 
     }
 
     // The "low" and "high" must be signed integers, as they could become -1.
-    // Also since they are signed integer, "(low + high)/2" is sightly more
+    // Also since they are signed integer, "(low + high)/2" is slightly more
     // expensive than (low+high)>>1 or ((unsigned)(low + high))/2.
     //
     int low = 0, high = vect_len - 1;
@@ -290,7 +290,7 @@ typedef enum {
 
 /* The Match_Tmpl is the template for vairants MV_FIRST_MATCH, MV_LEFT_LONGEST,
  * MV_RIGHT_LONGEST (If we really really need MV_RIGHT_LONGEST variant, we are
- * better off implementing it in a seprate function).
+ * better off implementing it in a separate function).
  *
  * The Match_Tmpl supports three variants at once "symbolically", once it's
  * instanced to a particular variants, all the code irrelevant to the variants
@@ -351,7 +351,7 @@ Match_Tmpl(AC_Buffer* buf, const char* str, uint32 len) {
             // Follow the fail-link.
             State_ID fl = state->fail_link;
             if (fl == 0) {
-                // fail-link is root-node, which implies the root-node dosen't
+                // fail-link is root-node, which implies the root-node doesn't
                 // have 255 valid transitions (otherwise, the fail-link should
                 // points to "goto(root, c)"), so we don't need speical handling
                 // as we did before this while-loop is entered.
