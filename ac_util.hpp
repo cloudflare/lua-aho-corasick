@@ -41,7 +41,7 @@ typedef unsigned long uint64;
 typedef unsigned char InputTy;
 
 #ifdef DEBUG
-    // Usage examples: ASSERT(a > b),  ASSERT(foo() && "Opps, foo() reutrn 0");
+    // Usage examples: ASSERT(a > b),  ASSERT(foo() && "Oops, foo() returned 0");
     #define ASSERT(c) if (!(c))\
         { fprintf(stderr, "%s:%d Assert: %s\n", __FILE__, __LINE__, #c); abort(); }
 #else

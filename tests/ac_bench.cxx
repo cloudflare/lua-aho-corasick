@@ -70,7 +70,7 @@ PatternSet::ExtractPattern(const char* filepath) {
     }
 
     if (filestat.st_size > 4096 * 1024) {
-        /* It dosen't seem to be a dictionary file*/
+        /* It doesn't seem to be a dictionary file*/
         _errmsg = "file too big?";
         return false;
     }
