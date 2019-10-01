@@ -213,7 +213,7 @@ Get_State_Addr(unsigned char* buf_base, AC_Ofst* StateOfstVect, uint32 state_id)
 //
 #if !defined(BS_MULTI_VER)
 
-#if defined(_MSC_VER) && !__INTEL_COMPILER && _MSC_VER >= 1310 // since Visual Studio .NET 2003
+#ifdef _MSC_VER
 #define INLINE_FLAG inline __forceinline
 #else
 #define INLINE_FLAG inline __attribute__((always_inline))
