@@ -4,7 +4,11 @@
 extern "C" {
 #endif
 
+#ifndef _MSC_VER
 #define AC_EXPORT __attribute__ ((visibility ("default")))
+#else
+#define AC_EXPORT
+#endif
 
 /* If the subject-string doesn't match any of the given patterns, "match_begin"
  * should be a negative; otherwise the substring of the subject-string,
