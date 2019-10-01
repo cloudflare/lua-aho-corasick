@@ -48,8 +48,13 @@ typedef unsigned char InputTy;
     #define ASSERT(c) ((void)0)
 #endif
 
+#ifndef _MSC_VER
 #define likely(x)   __builtin_expect((x),1)
 #define unlikely(x) __builtin_expect((x),0)
+#else
+#define likely(x)   (x)
+#define unlikely(x) (x)
+#endif
 
 #ifndef offsetof
 #define offsetof(st, m) ((size_t)(&((st *)0)->m))
