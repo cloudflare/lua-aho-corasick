@@ -11,7 +11,7 @@ AC_Converter::Calc_State_Sz(const ACS_State* s) const {
     if (sz < sizeof(AC_State))
         sz = sizeof(AC_State);
 
-    uint32 align = __alignof__(dummy);
+    uint32 align = __alignof(dummy);
     sz = (sz + align - 1) & ~(align - 1);
     return sz;
 }
@@ -35,14 +35,14 @@ AC_Converter::Alloc_Buffer() {
         root_goto_ofst = 0;
 
     // part 3: mapping of state's relative position.
-    unsigned align = __alignof__(AC_Ofst);
+    unsigned align = __alignof(AC_Ofst);
     sz = (sz + align - 1) & ~(align - 1);
     states_ofst_ofst = sz;
 
     sz += sizeof(AC_Ofst) * all_states.size();
 
     // part 4: state's contents
-    align = __alignof__(AC_State);
+    align = __alignof(AC_State);
     sz = (sz + align - 1) & ~(align - 1);
     first_state_ofst = sz;
 
@@ -82,7 +82,7 @@ AC_Converter::Populate_Root_Goto_Func(AC_Buffer* buf,
     uint32 new_id = 1;
     bool full_fantout = (goto_vect.size() == 255);
     if (likely(!full_fantout))
-        bzero(root_gotos, 256*sizeof(InputTy));
+        memset(root_gotos, 0, 256 * sizeof(InputTy));
 
     for (GotoVect::iterator i = goto_vect.begin(), e = goto_vect.end();
             i != e; i++, new_id++) {
@@ -212,7 +212,14 @@ Get_State_Addr(unsigned char* buf_base, AC_Ofst* StateOfstVect, uint32 state_id)
 // 10+ benchmarks. It's still too early to say which one works better.
 //
 #if !defined(BS_MULTI_VER)
-static bool __attribute__((always_inline)) inline
+
+#ifdef _MSC_VER
+#define INLINE_FLAG inline __forceinline
+#else
+#define INLINE_FLAG inline __attribute__((always_inline))
+#endif
+
+static bool INLINE_FLAG
 Binary_Search_Input(InputTy* input_vect, int vect_len, InputTy input, int& idx) {
     if (vect_len <= 8) {
         for (int i = 0; i < vect_len; i++) {
